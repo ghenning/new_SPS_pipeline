@@ -28,7 +28,8 @@ def process_one(FIL,DIR,DM):
     subdir = os.path.join(DIR,"subdir") # [later]
 
     # basename of file
-    clean_name = os.path.splitext(os.path.basename(FIL))
+    clean_basename = os.path.splitext(os.path.basename(FIL))
+    clean_fullname = os.path.splitext(FIL)[0]
       
     # standard zaps CX receiver
     zappys = "0:51,"\
@@ -41,15 +42,29 @@ def process_one(FIL,DIR,DM):
             "3888:3891"
 
     # prep RFIfind commands
-    RFI = "-time 2.0 -o {} {} " \
-        "-zapchan {} -chanfrac 0.7 " \
-        "-timesig 10 -intfrac 0.3".format(DIR,FIL,zappys)
+    ##RFI = "-time 2.0 -o {} {} " \
+        ##"-zapchan {} -chanfrac 0.7 " \
+        ##"-timesig 10 -intfrac 0.3".format(DIR,FIL,zappys)
+    RFI_t = "2.0"
+    RFI_o = "{}".format(clean_fullname)
+    RFI_file = "{}".format(FIL)
+    RFI_z = "{}".format(zappys)
+    RFI_cf = "0.7"
+    RFI_ts = "10"
+    RFI_if = "0.3"
 
     # run RFIfind
-    subprocess.check_call(["rfifind",RFI])
+    subprocess.check_call(["rfifind",
+        "-time",RFI_t,
+        "-o",RFI_o,
+        RFI_file,
+        "-zapchan",RFI_z,
+        "-chanfrac",RFI_cf,
+        "-timesig",RFI_ts,
+        "-intfrac",RFI_if])
 
     # save mask file path
-    mask_path = os.path.join(DIR,".mask")
+    mask_path = os.path.join(DIR,"*.mask")
     current_mask = glob.glob(mask_path)[0]
 
     # dedisperse using prepdata
@@ -59,13 +74,24 @@ def process_one(FIL,DIR,DM):
         name_dm = "{}_DM{}".format(clean_name,str(dm))
         prep_out = os.path.join(prepdir,name_dm)
     
-        PREP = "-nobary -dm {} "\
-                "-o {} "\
-                "-dm {} "\
-                "-mask {} "\
-                "{}"\
-                .format(str(dm),prep_out,str(dm),current_mask,FIL)
-        subprocess.check_call(["prepdata",PREP])
+        # prep prepdata commands
+        ##PREP = "-nobary -dm {} "\
+                ##"-o {} "\
+                ##"-mask {} "\
+                ##"{}"\
+                ##.format(str(dm),prep_out,str(dm),current_mask,FIL)
+        PD_dm = "{}".format(str(dm))
+        PD_o = "{}".format(prep_out)
+        PD_m = "{}".format(current_mask)
+        PD_file = "{}".format(FIL)
+
+        # run prepdata
+        subprocess.check_call(["prepdata",
+            "-nobary",
+            "-o",PD_o,
+            "-dm",PD_dm,
+            "-mask",PD_m,
+            PD_file])
 
     # prepsubband [later]
 
