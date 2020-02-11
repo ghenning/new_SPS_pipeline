@@ -28,7 +28,7 @@ def process_one(FIL,DIR,DM):
     subdir = os.path.join(DIR,"subdir") # [later]
 
     # basename of file
-    clean_basename = os.path.splitext(os.path.basename(FIL))
+    clean_basename = os.path.splitext(os.path.basename(FIL))[0]
     clean_fullname = os.path.splitext(FIL)[0]
       
     # standard zaps CX receiver
@@ -71,7 +71,7 @@ def process_one(FIL,DIR,DM):
     for dm in DM:
 
         # out parameter for prepdata
-        name_dm = "{}_DM{}".format(clean_name,str(dm))
+        name_dm = "{}_DM{}".format(clean_basename,str(dm))
         prep_out = os.path.join(prepdir,name_dm)
     
         # prep prepdata commands
@@ -97,10 +97,24 @@ def process_one(FIL,DIR,DM):
 
     # prep single pulse search command
     all_dat = os.path.join(prepdir,"*.dat")
-    SPS = "-t 7.0 -m 0.02 -b -p {}".format(all_dat)
+    ##SPS = "-t 7.0 -m 0.02 -b -p {}".format(all_dat)
+    thresh = 7.0
+    m = 0.02
+    SPS_t = "{}".format(thresh)
+    SPS_m = "{}".format(m)
+    SPS_files = "{}".format(all_dat) # [redundant]
 
     #single pulse search
-    subprocess.check_call(["single_pulse_search.py",SPS]) 
+    # can't use *.dat, need to iterate over files
+    # glob .dat files
+    all_dat_glob = glob.glob(all_dat)
+    for dat in all_dat_glob:
+        subprocess.check_call(["single_pulse_search.py",
+            "-t",SPS_t,
+            "-m",SPS_m,
+            "-b",
+            #"-p",
+            dat]) 
 
     # grab all singlepulse files
     sp_files = sps_files(prepdir) 
@@ -152,10 +166,11 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
                     DM = spdata[n,0]
                     Sig = spdata[n,1]
                     Tim = spdata[n,2]
-                    Samp = spdata[n,3]
-                    Downf = spdata[n,4]
+                    Samp = int(spdata[n,3])
+                    Downf = int(spdata[n,4])
                     str2file = "{:.1f}\t{:.2f}\t{:f}\t{:d}\t{:d}\n"\
                         .format(DM,Sig,Tim,Samp,Downf)
+                    F.write(str2file)
 
     # load the file created to sort
     gsps = np.loadtxt(goodspsfile) 
@@ -212,7 +227,8 @@ if __name__ == "__main__":
     # as this assumes processing a single
     # filterbank per cluster node
     fils = os.path.join(args.dir,"*.fil")
-    fil = fils[0]
+    fils_glob = glob.glob(fils)
+    fil = fils_glob[0]
 
     # process filterbank
     process_one(fil,args.dir,dms)
