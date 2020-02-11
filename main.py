@@ -3,12 +3,13 @@ matplotlib.use('Agg')
 import numpy as np
 import argparse
 import subprocess
+import os
+import glob
+import time
 #import filterbank
 #import waterfaller
 #import rawdata
-import os
 #from momentmod02 import singleplus
-import time
 #import rrattrapmod
 #import spssummarizer
 #from plotmaster import plotstutt,gathersps2
@@ -48,7 +49,8 @@ def process_one(FIL,DIR,DM):
     subprocess.check_call(["rfifind",RFI])
 
     # save mask file path
-    current_mask = os.path.join(DIR,BLA.mask) # FIX ME (how2get mask name)
+    mask_path = os.path.join(DIR,".mask")
+    current_mask = glob.glob(mask_path)[0]
 
     # dedisperse using prepdata
     for dm in DM:
@@ -80,25 +82,18 @@ def process_one(FIL,DIR,DM):
     # go through single pulse files
     # find high SN cands
     # sort in time
-    giantsps(sp_file,prepdir,DIR)
+    giantsps(sp_files,prepdir,DIR)
 
 # find all .singlepulse files
 def sps_files(DIR):
 
-    # first all files in prepdata dir
-    spdir_files = []
-    for (dirpath,dirnames,filenames) in os.walk(DIR):
-        spdir_files.extend(filenames)
-    
-    # all .singlepulse files
-    dot = '.'
-    sp_files = []
-    for i in range(len(spdir_files)):
-        tmpfilename = [dot.join(spdir_files[i].split(dot)[0:-1]),spdir_files[i].split(dot)[-1]]
-        if (tmpfilename[-1]=='singlepulse'):
-            sp_files.append(tmpfilename[0])
+    # all .singlepulse files in directory
+    all_sp = os.path.join(DIR,"*.singlepulse")
 
-    return sp_files
+    # glob the files
+    all_sp_glob = glob.glob(all_sp)
+
+    return all_sp_glob
 
 # write high SN cands to file
 def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
@@ -112,16 +107,12 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
         F.write(headstring) 
 
     for SP in SPFILES:
-
-        # add extension
-        SP_ext = os.path.join(SP + ".singlepulse")
         
         # check if file is empty
-        full_SP = os.path.join(PREPDIR,SP_ext)
-        if (os.stat(full_SP).st_size==0): continue
+        if (os.stat(SP).st_size==0): continue
 
         # load singlepulse file
-        spdata = np.loadtxt(full_SP)
+        spdata = np.loadtxt(SP)
         if not spdata.any(): continue
 
         # fix weird behaviour with one-liners
@@ -187,13 +178,18 @@ if __name__ == "__main__":
     # create DM list
     dms = np.arange(args.lodm,args.hidm+1,args.dmstep)
 
-    # ADD MISSING INPUT ERRORS
+    # ADD MISSING INPUT ERRORS [later]
+    # optional vs required args
 
     # find filterbank file
-    ## find me!!!
+    # should only contain one filterbank
+    # as this assumes processing a single
+    # filterbank per cluster node
+    fils = os.path.join(args.dir,"*.fil")
+    fil = fils[0]
 
     # process filterbank
-    ##process_one(fil,args.dir,dms)
+    process_one(fil,args.dir,dms)
 
     # ADD NEWSPS2.GULLFOSS FROM OLD PIPE
     
@@ -207,6 +203,6 @@ if __name__ == "__main__":
     # Total time processing 
     t_tot = t_1 - t_0
     print "T {}".format(t_tot)
-    print args.nomask
-    print dms
+    #print args.nomask
+    #print dms
 
