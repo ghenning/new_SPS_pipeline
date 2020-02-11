@@ -22,7 +22,7 @@ def process_one(FIL,DIR,DM):
     prepdir = os.path.join(DIR,"prepsub")
     if not os.path.exists(prepdir):
         try:
-            subprocess.check_call(["mkdir",res_dir])
+            subprocess.check_call(["mkdir",DIR])
         except OSError as error:    
             print error
     subdir = os.path.join(DIR,"subdir") # [later]
