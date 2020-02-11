@@ -122,7 +122,10 @@ def process_one(FIL,DIR,DM):
     # go through single pulse files
     # find high SN cands
     # sort in time
-    giantsps(sp_files,prepdir,DIR)
+    file_to_waterfall = giantsps(sp_files,prepdir,DIR)
+
+    # write out waterfall candidates
+    waterfall_cands(file_to_waterfall)
 
 # find all .singlepulse files
 def sps_files(DIR):
@@ -188,7 +191,53 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
     head = "DM \t Sigma \t Time(s) \t Sample \t Downfact"
     formt = "%.1f \t %.2f \t %f \t %d \t %d" # OLD WAY, FIX WITH STR.FORMAT
     np.savetxt(goodsps_sorted,gsps,fmt=formt,header=head)
+    return goodsps_sorted
+
+# write highest SN cands to file
+def waterfall_cands(FILE):
+
+    # load high SN cand file
+    goodsps = np.loadtxt(FILE)
+    if not goodsps.any():
+        str2return = "No good single pulses"
+        print "{}".format(str2return)
+        return 0 
+
+    # hardcoded time resolution
+    sampsize = 131e-6 
+
+    # prep array
+    wf_cands = np.zeros((1,5))
+    
+    # iterate through cands
+    # finding the strongest SN cand
+    # within a certain time period
+    # now set to 1 sec
+    elecounter = 0
+    while elecounter<len(goodsps):
+        timgrp, = np.where(abs(goodsps[elecounter:,2]-1.)<=goodsps[elecounter,2])
+        timgrp += elecounter
+        try:
+            maxval, = np.where(goodsps[timgrp,1]==goodsps[timgrp,1].max())
+        # in case of error, move 1 second ahead
+        except ValueError:
+            added_time = int(1/sampsize)
+            elecounter += added_time
+            continue
+        maxval += elecounter
+        wf_cands = np.append(wf_cands,goodsps[maxval],axis=0)
+        elecounter = timgrp[-1] + 1 
+
+    # create path to new file
+    wf_file = os.path.join(os.path.dirname(FILE),"waterfall_cands.txt")
         
+    # remove first line which is only zeros
+    wf_cands = np.delete(wf_cands,0,0)
+
+    # create header and format of file and save 
+    head = "DM \t Sigma \t Time(s) \t Sample \t Downfact"
+    formt = "%.1f \t %.2f \t %f \t %d \t %d" # OLD WAY, FIX WITH STR.FORMAT
+    np.savetxt(wf_file,wf_cands,fmt=formt,header=head)
     
 if __name__ == "__main__":
     desc = """ I'm a description """
