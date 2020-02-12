@@ -6,6 +6,7 @@ import subprocess
 import os
 import glob
 import time
+import plotter
 #import filterbank
 #import waterfaller
 #import rawdata
@@ -125,7 +126,9 @@ def process_one(FIL,DIR,DM):
     file_to_waterfall, all_cands = giantsps(sp_files,prepdir,DIR)
 
     # write out waterfall candidates
-    waterfall_cands(file_to_waterfall)
+    wf_file = waterfall_cands(file_to_waterfall)
+
+    plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
 
 # find all .singlepulse files
 def sps_files(DIR):
@@ -142,7 +145,7 @@ def sps_files(DIR):
 def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
  
     # the header 
-    head = "DM \t Sigma \t Time(s) \t Sample \t Downfact"
+    head = "# DM \t Sigma \t Time(s) \t Sample \t Downfact"
 
     # format of files
     formt = "%.1f \t %.2f \t %f \t %d \t %d" # OLD WAY, FIX WITH STR.FORMAT
@@ -156,8 +159,10 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
     # write header to files
     with open(goodspsfile,'w') as F:
         F.write(head) 
+        F.write("\n")
     with open(all_sps,'w') as F:
         F.write(head)
+        F.write("\n")
 
     for SP in SPFILES:
         
@@ -258,6 +263,8 @@ def waterfall_cands(FILE):
     head = "DM \t Sigma \t Time(s) \t Sample \t Downfact"
     formt = "%.1f \t %.2f \t %f \t %d \t %d" # OLD WAY, FIX WITH STR.FORMAT
     np.savetxt(wf_file,wf_cands,fmt=formt,header=head)
+
+    return wf_file
     
 if __name__ == "__main__":
     desc = """ I'm a description """
