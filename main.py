@@ -122,7 +122,7 @@ def process_one(FIL,DIR,DM):
     # go through single pulse files
     # find high SN cands
     # sort in time
-    file_to_waterfall = giantsps(sp_files,prepdir,DIR)
+    file_to_waterfall, all_cands = giantsps(sp_files,prepdir,DIR)
 
     # write out waterfall candidates
     waterfall_cands(file_to_waterfall)
@@ -138,16 +138,26 @@ def sps_files(DIR):
 
     return all_sp_glob
 
-# write high SN cands to file
+# write high SN cands to file (and all cands to file as well)
 def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
  
-    # name file
-    goodspsfile = os.path.join(DIR,"goodsps.txt")
+    # the header 
+    head = "DM \t Sigma \t Time(s) \t Sample \t Downfact"
 
-    # write header to file
+    # format of files
+    formt = "%.1f \t %.2f \t %f \t %d \t %d" # OLD WAY, FIX WITH STR.FORMAT
+
+    # name files
+    goodspsfile = os.path.join(DIR,"goodsps.txt")
+    goodsps_sorted = os.path.join(DIR,"goodsps_sorted.txt")
+    all_sps = os.path.join(DIR,"all_sps.txt")
+    all_sps_sorted = os.path.join(DIR,"all_sps_sorted.txt")
+
+    # write header to files
     with open(goodspsfile,'w') as F:
-        headstring = "# DM \t Sigma \t Time(s) \t Sample \t Downfact \n"
-        F.write(headstring) 
+        F.write(head) 
+    with open(all_sps,'w') as F:
+        F.write(head)
 
     for SP in SPFILES:
         
@@ -163,17 +173,32 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
             spdata = np.reshape(spdata,(1,len(spdata)))
 
         # go through each line and check for high SN
+        # and write all to all_sps file
         for n in range(np.size(spdata,0)):
-            with open(goodspsfile,'a') as F:
-                if (spdata[n,1]>=THRESH):
-                    DM = spdata[n,0]
-                    Sig = spdata[n,1]
-                    Tim = spdata[n,2]
-                    Samp = int(spdata[n,3])
-                    Downf = int(spdata[n,4])
-                    str2file = "{:.1f}\t{:.2f}\t{:f}\t{:d}\t{:d}\n"\
-                        .format(DM,Sig,Tim,Samp,Downf)
+            DM = spdata[n,0]
+            Sig = spdata[n,1]
+            Tim = spdata[n,2]
+            Samp = int(spdata[n,3])
+            Downf = int(spdata[n,4])
+            str2file = "{:.1f}\t{:.2f}\t{:f}\t{:d}\t{:d}\n"\
+                .format(DM,Sig,Tim,Samp,Downf)
+            with open(all_sps,'a') as F:
+                F.write(str2file)
+            if (Sig>=THRESH):
+                with open(goodspsfile,'a') as F:
                     F.write(str2file)
+
+    # load file created to sort (all sps)
+    asps = np.loadtxt(all_sps)
+    
+    # sort the file by time
+    if asps.any():
+        asps = asps[asps[:,2].argsort()]
+    else:
+        asps = np.zeros((1,5))
+
+    # write to file
+    np.savetxt(all_sps_sorted,asps,fmt=formt,header=head)
 
     # load the file created to sort
     gsps = np.loadtxt(goodspsfile) 
@@ -184,14 +209,9 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
     else:
         gsps = np.zeros((1,5))
 
-    # new sorted file
-    goodsps_sorted = os.path.join(DIR,"goodsps_sorted.txt")
-
     # write to it
-    head = "DM \t Sigma \t Time(s) \t Sample \t Downfact"
-    formt = "%.1f \t %.2f \t %f \t %d \t %d" # OLD WAY, FIX WITH STR.FORMAT
     np.savetxt(goodsps_sorted,gsps,fmt=formt,header=head)
-    return goodsps_sorted
+    return goodsps_sorted, all_sps_sorted
 
 # write highest SN cands to file
 def waterfall_cands(FILE):
