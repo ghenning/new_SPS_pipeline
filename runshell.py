@@ -36,7 +36,7 @@ def process_files(FILES):
                 print error
 
         # run launchmaker on each file
-        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,args.res,args.code,args.job,args.log,args.longQ,args.dmstep)
+        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,fil_res,args.code,args.job,args.log,args.longQ,args.dmstep)
 
         # make it executable
         subprocess.check_call(["chmod","+x","launch_me.sh"])
@@ -49,8 +49,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--dir',
             help="Directory to filterbanks")
-    parser.add_argument('--res',
-            help="Result directory")
     parser.add_argument('--code',
             help="Code directory")
     parser.add_argument('--job', default="1519",

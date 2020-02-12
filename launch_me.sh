@@ -20,7 +20,7 @@ step="3"
 orig_fil="/hercules/results/ghil/1519/20200207/FRB1.fil" 
 tmpdir="/tmp/FRB1" 
 tmpfil=$tmpdir"/FRB1.fil" 
-result_dir="/herc/bla/files/res/FRB1" 
+result_dir="/hercules/results/ghil/1519/20200207/results/FRB1" 
 code_dir="/herc/bla/code" 
 prepdir=$tmpdir"/prepsub" 
 
