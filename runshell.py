@@ -3,6 +3,7 @@ import os
 import numpy as np
 import launchmaker
 import argparse
+import glob
 
 def grab_fils(DIR):
 
