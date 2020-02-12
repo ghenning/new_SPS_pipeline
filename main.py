@@ -7,15 +7,6 @@ import os
 import glob
 import time
 import plotter
-#import filterbank
-#import waterfaller
-#import rawdata
-#from momentmod02 import singleplus
-#import rrattrapmod
-#import spssummarizer
-#from plotmaster import plotstutt,gathersps2
-#import newsps2
-#import spsbreak
 
 def process_one(FIL,DIR,DM):
 
@@ -43,9 +34,6 @@ def process_one(FIL,DIR,DM):
             "3888:3891"
 
     # prep RFIfind commands
-    ##RFI = "-time 2.0 -o {} {} " \
-        ##"-zapchan {} -chanfrac 0.7 " \
-        ##"-timesig 10 -intfrac 0.3".format(DIR,FIL,zappys)
     RFI_t = "2.0"
     RFI_o = "{}".format(clean_fullname)
     RFI_file = "{}".format(FIL)
@@ -76,11 +64,6 @@ def process_one(FIL,DIR,DM):
         prep_out = os.path.join(prepdir,name_dm)
     
         # prep prepdata commands
-        ##PREP = "-nobary -dm {} "\
-                ##"-o {} "\
-                ##"-mask {} "\
-                ##"{}"\
-                ##.format(str(dm),prep_out,str(dm),current_mask,FIL)
         PD_dm = "{}".format(str(dm))
         PD_o = "{}".format(prep_out)
         PD_m = "{}".format(current_mask)
@@ -98,7 +81,6 @@ def process_one(FIL,DIR,DM):
 
     # prep single pulse search command
     all_dat = os.path.join(prepdir,"*.dat")
-    ##SPS = "-t 7.0 -m 0.02 -b -p {}".format(all_dat)
     thresh = 7.0
     m = 0.02
     SPS_t = "{}".format(thresh)
@@ -314,13 +296,9 @@ if __name__ == "__main__":
     # WHERE IS THE M_I CALC? NEWSPS2.PY
     #ADD AS SEPARATE MODULE POST-PROCESSING?
 
-    # ADD PLOTTING. PLOTMASTER.PY
-
     # Time process
     t_1 = time.time()
     # Total time processing 
     t_tot = t_1 - t_0
     print "T {}".format(t_tot)
-    #print args.nomask
-    #print dms
 
