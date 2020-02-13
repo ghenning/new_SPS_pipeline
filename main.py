@@ -115,7 +115,7 @@ def process_one(FIL,DIR,DM):
     plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
 
     # calculate modulation index
-    mod_index(FIL,current_mask,DIR)
+    mod_index(FIL,current_mask,DIR,wf_file)
 
 # find all .singlepulse files
 def sps_files(DIR):
@@ -253,10 +253,10 @@ def waterfall_cands(FILE):
 
     return wf_file
 
-def mod_index(FIL,MASK,DIR):
+def mod_index(FIL,MASK,DIR,CANDFILE):
 
     # load mod index cand file
-    data = np.loadtxt(FILE)
+    data = np.loadtxt(CANDFILE)
     if not data.any():
         str2return = "No modulation index cands"
         print "{}".format(str2return)
