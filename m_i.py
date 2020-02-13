@@ -57,7 +57,8 @@ def read_mask(MASK):
 def M_I(FIL,MASK,DM,T,W):
 
     # read the header
-    head = header(FIL)
+    with open(FIL,'r') as F:
+        head = header(F)
     
     # get tsamp and nchan of data
     tsamp = get_headparam(head,['tsamp'])[0]
