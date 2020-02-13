@@ -110,7 +110,11 @@ def process_one(FIL,DIR,DM):
     # write out waterfall candidates
     wf_file = waterfall_cands(file_to_waterfall)
 
+    # make plots    
     plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
+
+    # calculate modulation index
+    mod_index(FIL,current_mask,DIR)
 
 # find all .singlepulse files
 def sps_files(DIR):
@@ -247,6 +251,35 @@ def waterfall_cands(FILE):
     np.savetxt(wf_file,wf_cands,fmt=formt,header=head)
 
     return wf_file
+
+def mod_index(FIL,MASK,DIR):
+
+    # load mod index cand file
+    data = np.loadtxt(FILE)
+    if not data.any():
+        str2return = "No modulation index cands"
+        print "{}".format(str2return)
+        return 0 
+
+    # name file and write header
+    m_i_file = os.path.join(DIR,"mod_index.txt")
+    head = "# DM \t Sigma \t Time(s) \t Sample \t Downfact \t M_I"
+    with open(m_i_file,'w') as F:
+        F.write(head)
+        F.write("\n")
+
+    # calculate modulation index for each candidate
+    for cand in data:
+        DM = cand[0]
+        T = cand[3]
+        W = cand[4]
+        M = m_i.M_I(FIL,MASK,DM,T,W) 
+        Sig = cand[1]
+        Time = cand[2]
+        str2file = "{:.1f}\t{:.2f}\t{:f}\t{:d}\t{:d}\t{:.2f}\n"\
+                .format(DM,Sig,Time,T,W,M)
+        with open(m_i_file,'a') as F:
+            F.write(str2file)
     
 if __name__ == "__main__":
     desc = """ I'm a description """
