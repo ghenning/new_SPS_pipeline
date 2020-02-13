@@ -262,6 +262,10 @@ def mod_index(FIL,MASK,DIR,CANDFILE):
         print "{}".format(str2return)
         return 0 
 
+    # fix weird behaviour with one-liners
+    if np.ndim(data)==1:
+        data = np.reshape(data,(1,len(data)))
+
     # name file and write header
     m_i_file = os.path.join(DIR,"mod_index.txt")
     head = "# DM \t Sigma \t Time(s) \t Sample \t Downfact \t M_I"
