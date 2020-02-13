@@ -282,7 +282,7 @@ def mod_index(FIL,MASK,DIR,CANDFILE):
         Sig = cand[1]
         Time = cand[2]
         str2file = "{:.1f}\t{:.2f}\t{:f}\t{:d}\t{:d}\t{:.2f}\n"\
-                .format(DM,Sig,Time,T,W,M)
+                .format(DM,Sig,Time,int(T),int(W),M)
         with open(m_i_file,'a') as F:
             F.write(str2file)
     
