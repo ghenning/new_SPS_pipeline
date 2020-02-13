@@ -85,7 +85,8 @@ def M_I(FIL,MASK,DM,T,W):
     data[mask,:] = medi
 
     # scale cand data
-    data /= medi
+    ##data /= medi # same_kind divide error
+    data = data/medi
     data -= 1
     
     # calculate moments and modulation index
