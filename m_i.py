@@ -62,7 +62,7 @@ def M_I(FIL,MASK,DM,T,W):
     
     # get tsamp and nchan of data
     tsamp = get_headparam(head,['tsamp'])[0]
-    nchan = get_headparam(head,['nchan'])[0]
+    nchan = get_headparam(head,['nchans'])[0]
 
     # find start and duration of candidate
     start1 = T - int((.5 * W))
