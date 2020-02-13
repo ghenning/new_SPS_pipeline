@@ -307,7 +307,14 @@ if __name__ == "__main__":
             help="Use subbands (prepsubband) [add later+other options]")
     args = parser.parse_args()
 
+    # !!!!!!!!!!!!!! #
+    # MISSING FEATURES
     # RE-INCORPORATE DDPLAN FROM OLD PIPE AT SOME POINT
+    # ADD GENERALPLOTTER.PY FOR M_I CANDS?
+    # PREPSUBBAND (WITH DDPLAN)
+    # DDPLAN WITH PREPDATA?
+    # MANUAL MASK
+    # !!!!!!!!!!!!!! #
 
     # Time process
     t_0 = time.time()
@@ -329,14 +336,13 @@ if __name__ == "__main__":
     # process filterbank
     process_one(fil,args.dir,dms)
 
-    # ADD NEWSPS2.GULLFOSS FROM OLD PIPE
-    
-    # WHERE IS THE M_I CALC? NEWSPS2.PY
-    #ADD AS SEPARATE MODULE POST-PROCESSING?
+    # end message
+    end_msg = "great success, all done!"
+    print end_msg
 
     # Time process
     t_1 = time.time()
     # Total time processing 
     t_tot = t_1 - t_0
-    print "T {}".format(t_tot)
+    print "This took {} seconds, mama mia!".format(t_tot)
 
