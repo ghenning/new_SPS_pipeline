@@ -79,7 +79,7 @@ def M_I(FIL,MASK,DM,T,W):
     mask = read_mask(MASK)
 
     # get cand data
-    data = grab_data(FIL,start,dur,nchan)
+    data = grab_data(FIL,start1,W,nchan)
     
     # replace zaps with median
     data[mask,:] = medi
