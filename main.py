@@ -10,7 +10,24 @@ import plotter
 import m_i
 import wrap_cand_plot
 
-def process_one(FIL,DIR,DM):
+def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
+
+    if SUB:
+        # prepsubband stuff
+        # run DDplan.py and get search parameters
+        DDres,subb = DDp.create_DDplan(FIL,DIR,DMLO,DMHI)
+        lowDM = DDres[:,0]
+        hiDM = DDres[:,1]
+        dDM = DDres[:,2]
+        downsamp = DDres[:,3]
+        dsubDM = DDres[:,4]
+        numDMs = DDres[:,5]
+        DMsCall = DDres[:,6]
+        calls = DDres[:,7]
+        numjob = len(loDM)
+    else: 
+        # create DM list
+        DM = np.arange(DMLO,DMHI+1,DMSTEP)
 
     # sub-directories 
     prepdir = os.path.join(DIR,"prepsub")
@@ -19,7 +36,13 @@ def process_one(FIL,DIR,DM):
             subprocess.check_call(["mkdir",prepdir])
         except OSError as error:    
             print error
-    subdir = os.path.join(DIR,"subdir") # [later]
+    if SUB:
+        subdir = os.path.join(DIR,"subdir") # [later]
+        if not os.path.exists(subdir):
+            try:
+                subprocess.check_call(["mkdir",subdir])
+            except OSError as error:
+                print error
 
     # basename of file
     clean_basename = os.path.splitext(os.path.basename(FIL))[0]
@@ -58,28 +81,59 @@ def process_one(FIL,DIR,DM):
     mask_path = os.path.join(DIR,"*.mask")
     current_mask = glob.glob(mask_path)[0]
 
-    # dedisperse using prepdata
-    for dm in DM:
-
-        # out parameter for prepdata
-        name_dm = "{}_DM{}".format(clean_basename,str(dm))
-        prep_out = os.path.join(prepdir,name_dm)
+    if SUB:
     
-        # prep prepdata commands
-        PD_dm = "{}".format(str(dm))
-        PD_o = "{}".format(prep_out)
-        PD_m = "{}".format(current_mask)
-        PD_file = "{}".format(FIL)
+        # out parameter for prepsubband
+        sub_out = os.path.join(subdir,clean_basename)
+        sub_out_2 = os.path.join(prepdir,clean_basename)
 
-        # run prepdata
-        subprocess.check_call(["prepdata",
-            "-nobary",
-            "-o",PD_o,
-            "-dm",PD_dm,
-            "-mask",PD_m,
-            PD_file])
+        # dedisperse using prepsubband
+        for ddplan in range(numjob):
+            tmpLoDM = lowDM[ddplan]
+            sub_dmstep = DMsCall[ddplan] * dDM[ddplan]
+            for call in range(int(calls[ddplan])):
+                lowDMprep = loDM[ddplan] + call * sub_dmstep
+                tmpsubdm = tmpLoDM + (call + .5) * sub_dmstep # wat? it works I guess 
+                subprocess.check_call(["prepsubband",
+                    FIL,
+                    "-nobary",
+                    "-sub","-subdm",str(tmpsubdm),
+                    "-downsamp",str(int(downsamp[ddplan])),
+                    "-nsub",str(subb),
+                    "-mask",current_mask,
+                    "-o",sub_out])
+                tmpsubname = "{}_DM{}0.sub[0-9]*".format(clean_basename,tmpsubdm)
+                tmpin = os.path.join(subdir,tmpsubname)
+                subprocess.check_call(["prepsubband",
+                    "-lodm",str(lowDMprep),
+                    "-dmstep",str(dDM[ddplan]),
+                    "-downsamp",str(1),
+                    "-nobary",
+                    "-nsub",str(subb),
+                    "-o",sub_out_2,
+                    tmpin]) 
+    else: 
 
-    # prepsubband [later]
+        # dedisperse using prepdata
+        for dm in DM:
+
+            # out parameter for prepdata
+            name_dm = "{}_DM{}".format(clean_basename,str(dm))
+            prep_out = os.path.join(prepdir,name_dm)
+        
+            # prep prepdata commands
+            PD_dm = "{}".format(str(dm))
+            PD_o = "{}".format(prep_out)
+            PD_m = "{}".format(current_mask)
+            PD_file = "{}".format(FIL)
+
+            # run prepdata
+            subprocess.check_call(["prepdata",
+                "-nobary",
+                "-o",PD_o,
+                "-dm",PD_dm,
+                "-mask",PD_m,
+                PD_file])
 
     # prep single pulse search command
     all_dat = os.path.join(prepdir,"*.dat")
@@ -302,6 +356,8 @@ if __name__ == "__main__":
             help="Maximum DM for search")
     parser.add_argument('--dmstep',type=int, default=1,
             help="DM step")
+    parser.add_argument('--subband',action='store_true',
+            help="Use subbands and prepsubband (and DDplan.py)")
     parser.add_argument('--nomask',action='store_true',
             help="Skip RFIfind [add later]") 
     parser.add_argument('--mask',
@@ -313,7 +369,6 @@ if __name__ == "__main__":
     # !!!!!!!!!!!!!! #
     # MISSING FEATURES
     # RE-INCORPORATE DDPLAN FROM OLD PIPE AT SOME POINT
-    # ADD GENERALPLOTTER.PY FOR M_I CANDS?
     # PREPSUBBAND (WITH DDPLAN)
     # DDPLAN WITH PREPDATA?
     # MANUAL MASK
@@ -326,7 +381,7 @@ if __name__ == "__main__":
     t_0 = time.time()
 
     # create DM list
-    dms = np.arange(args.lodm,args.hidm+1,args.dmstep)
+    ##dms = np.arange(args.lodm,args.hidm+1,args.dmstep)
 
     # find filterbank file
     # should only contain one filterbank
@@ -337,7 +392,8 @@ if __name__ == "__main__":
     fil = fils_glob[0]
 
     # process filterbank
-    process_one(fil,args.dir,dms)
+    ##process_one(fil,args.dir,dms)
+    process_one(fil,args.dir,args.lodm,args.hidm,args.dmstep,args.subband)
 
     # end message
     end_msg = "great success, all done!"
