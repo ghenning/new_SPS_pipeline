@@ -54,13 +54,14 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
 
     # file parameters
     ftop = get_headparam(head,['fch1'])[0]
-    fchan = get_headparam(head,['foff'])[0]
+    fchan = abs(get_headparam(head,['foff'])[0])
     nchan = get_headparam(head,['nchans'])[0]
-    samptime = get_headparam(head,['nchans'])[0]
+    samptime = get_headparam(head,['tsamp'])[0]
+    tsamp = samptime * 1e3 # in milliseconds
 
     # scrunch parameters
     fscrunch = 512
-    tscrunc = 4
+    tscrunch = 4
 
     # plot directory
     plt_dir = os.path.join(DIR,"cand_plots")
@@ -68,19 +69,22 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
     # loop through candidates and plot each one
     for cand in data:
         DM = cand[0]
-        T = cand[3] 
+        T = int(cand[3])
         
         # call generalplotter.py 
-        subproces.check_call(["python","generalplotter.py",
-            "--ftop",ftop,
-            "--fchan",fchan,
-            "--nchan",nchan,
-            "--samptime",samptime,
-            "--data",FIL,
-            "--fscrunch",str(fscrunch),
-            "--tscrunch",str(tscrunch),
-            "--out",plt_dir,
-            "--dm",DM,
-            "--samp",T,
-            "--mask",MASK])
+        try:
+            subprocess.check_call(["python","generalplotter.py",
+                "--ftop",str(ftop),
+                "--fchan",str(fchan),
+                "--nchan",str(nchan),
+                "--samptime",str(samptime),
+                "--data",FIL,
+                "--fscrunch",str(fscrunch),
+                "--tscrunch",str(tscrunch),
+                "--out",plt_dir,
+                "--dm",str(DM),
+                "--samp",str(T),
+                "--mask",MASK])
+        except subprocess.CalledProcessError as err:
+            print err
 
