@@ -8,6 +8,7 @@ import glob
 import time
 import plotter
 import m_i
+import wrap_cand_plot
 
 def process_one(FIL,DIR,DM):
 
@@ -116,6 +117,8 @@ def process_one(FIL,DIR,DM):
 
     # calculate modulation index
     mod_index(FIL,current_mask,DIR,wf_file)
+
+    wrap_cand_plot.plot_cands(FIL,current_mask,DIR,wf_file)
 
 # find all .singlepulse files
 def sps_files(DIR):
@@ -285,7 +288,7 @@ def mod_index(FIL,MASK,DIR,CANDFILE):
                 .format(DM,Sig,Time,int(T),int(W),M)
         with open(m_i_file,'a') as F:
             F.write(str2file)
-    
+
 if __name__ == "__main__":
     desc = """ I'm a description """
     parser = argparse.ArgumentParser(description=desc)
@@ -314,6 +317,9 @@ if __name__ == "__main__":
     # PREPSUBBAND (WITH DDPLAN)
     # DDPLAN WITH PREPDATA?
     # MANUAL MASK
+    # OPTION FLAG FOR ZAPPYS
+    # ADD MISSING INPUT ERRORS [later]
+    # optional vs required args
     # !!!!!!!!!!!!!! #
 
     # Time process
@@ -321,9 +327,6 @@ if __name__ == "__main__":
 
     # create DM list
     dms = np.arange(args.lodm,args.hidm+1,args.dmstep)
-
-    # ADD MISSING INPUT ERRORS [later]
-    # optional vs required args
 
     # find filterbank file
     # should only contain one filterbank
