@@ -77,7 +77,7 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
                 "--ftop",str(ftop),
                 "--fchan",str(fchan),
                 "--nchan",str(nchan),
-                "--samptime",str(samptime),
+                "--samptime",str(tsamp),
                 "--data",FIL,
                 "--fscrunch",str(fscrunch),
                 "--tscrunch",str(tscrunch),
