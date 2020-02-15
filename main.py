@@ -363,7 +363,7 @@ if __name__ == "__main__":
     parser.add_argument('--mask',
             help="Manual mask input [add later]")
     parser.add_argument('--subband',action='store_true',
-            help="Use subbands (prepsubband) [add later+other options]")
+            help="Use subbands (prepsubband)")
     args = parser.parse_args()
 
     # !!!!!!!!!!!!!! #

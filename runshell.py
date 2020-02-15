@@ -37,7 +37,7 @@ def process_files(FILES):
                 print error
 
         # run launchmaker on each file
-        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,fil_res,args.code,args.job,args.log,args.longQ,args.dmstep)
+        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,fil_res,args.code,args.job,args.log,args.longQ,args.dmstep,args.subband)
 
         # make it executable
         subprocess.check_call(["chmod","+x","launch_me.sh"])
@@ -64,6 +64,8 @@ if __name__ == "__main__":
             help="High DM of search. Default: 600")
     parser.add_argument('--dmstep', type=int, default=2,
             help="DM step of search. Default: 2")
+    parser.add_argument("--subband",action='store_true',
+            help="Use prepsubband with DDplan. Default: False")
     args = parser.parse_args()
 
     # grab filterbanks

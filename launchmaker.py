@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP):
+def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND):
     with open("launch_me.sh",'w') as F:
         F.write("#!/bin/bash -l \n")
         F.write("\n")
@@ -51,7 +51,10 @@ def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP):
         F.write("\n")
         F.write("rsync -v $orig_fil $tmpdir \n")
         F.write("\n")
-        F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step \n")
+        if SUBBAND:
+            F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --subband \n")
+        else:
+            F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step \n")
         F.write("\n")
         F.write("echo \"ls tmpdir\" \n")
         F.write("echo \"###########\" \n")
