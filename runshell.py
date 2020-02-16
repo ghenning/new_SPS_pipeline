@@ -71,6 +71,13 @@ if __name__ == "__main__":
     # grab filterbanks
     files = grab_fils(args.dir)
 
+    # create log directory
+    if not os.path.exists(args.log):
+        try:
+            subprocess.check_call(["mkdir",args.log])
+        except OSError as error:
+            print error 
+
     # send filterbanks to slurm factory
     process_files(files)
 

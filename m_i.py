@@ -85,12 +85,18 @@ def M_I(FIL,MASK,DM,T,W):
         print "reached the end of the file"
         return 999
 
-    # get median of ref frame
+    # get median of ref frame, get data
     ref_data = grab_data(FIL,start2,dur2,nchan)
-    medi = np.median(np.ndarray.flatten(ref_data))
 
-    # apply mask to cand
+    # read mask
     mask = read_mask(MASK)
+
+    # mask data
+    ref_data[mask,:] = 0
+
+    # median of data, ignoring masked values
+    #medi = np.median(np.ndarray.flatten(ref_data))
+    medi = np.median(np.ndarray.flatten(ref_data[np.nonzero(ref_data)]))
 
     # get cand data
     data = grab_data(FIL,start1,W,nchan)

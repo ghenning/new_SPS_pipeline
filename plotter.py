@@ -54,9 +54,10 @@ def plotstuff(ALL_SPS,GOOD_SPS,WF_CANDS):
 
     # plot good cands
     if is_good and np.count_nonzero(good_dat)>0:
+        # limit the maximum circle size for plot
         good_SN[good_SN>40] = 40
         ax.scatter(good_T,good_DM,marker='o',color='blue',linewidth=.5,
-            facecolor='none',s=2.*good_SN+.5)#,(sn-5)**2+.5,label='High SN')
+            facecolor='none',s=good_SN**2.2+.5)#,(sn-5)**2+.5,label='High SN')
 
     # plot wf cands
     if is_wf and np.count_nonzero(wf_dat)>0:
@@ -106,7 +107,7 @@ def plotstuff(ALL_SPS,GOOD_SPS,WF_CANDS):
     if is_good and np.count_nonzero(good_dat)>0:
         good_SN[good_SN>40] = 40
         ax5.scatter(good_T,good_DM,color='blue',linewidth=.5,
-            facecolor='none',s=2.*good_SN+.5)
+            facecolor='none',s=good_SN**2.2+.5)
     if is_wf and np.count_nonzero(wf_dat)>0:
         ax5.scatter(wf_T,wf_DM,marker='x',color='red',linewidth=.5,
             s=2)
