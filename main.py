@@ -402,6 +402,8 @@ if __name__ == "__main__":
     # !!!!!!!!!!!!!! #
     # MISSING FEATURES
     # DOUBLE CHECK WHAT M_I IS LOOKING AT (WHERE In FILE)
+    #   seems fine, but is crashing in some cases (crap holiday data)
+    #   see if it happens to other data as well
     # ADD DDPLAN FOR PREPDATA
     # DDPLAN WITH PREPDATA?
     # MANUAL MASK
