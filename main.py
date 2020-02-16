@@ -9,6 +9,7 @@ import time
 import plotter
 import m_i
 import wrap_cand_plot
+import DDp
 
 def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
 
@@ -16,15 +17,29 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
         # prepsubband stuff
         # run DDplan.py and get search parameters
         DDres,subb = DDp.create_DDplan(FIL,DIR,DMLO,DMHI)
-        lowDM = DDres[:,0]
-        hiDM = DDres[:,1]
-        dDM = DDres[:,2]
-        downsamp = DDres[:,3]
-        dsubDM = DDres[:,4]
-        numDMs = DDres[:,5]
-        DMsCall = DDres[:,6]
-        calls = DDres[:,7]
-        numjob = len(loDM)
+        # ddplan.py does a stupid thing sometimes and writes
+        # its output differently than usual
+        # this is to fix that 
+        # found out, it happens if you don't have the -s flag
+        if len(DDres==1) and int(DDres[0,-1])==0:
+            lowDM = DDres[:,0]
+            hiDM = DDres[:,1]
+            dDM = DDres[:,2]
+            downsamp = DDres[:,3]
+            dsubDM = hiDM - lowDM
+            numDMs = DDres[:,4]
+            DMsCall = numDMs
+            calls = np.ones(len(lowDM))
+        else: 
+            lowDM = DDres[:,0]
+            hiDM = DDres[:,1]
+            dDM = DDres[:,2]
+            downsamp = DDres[:,3]
+            dsubDM = DDres[:,4]
+            numDMs = DDres[:,5]
+            DMsCall = DDres[:,6]
+            calls = DDres[:,7]
+        numjob = len(lowDM)
     else: 
         # create DM list
         DM = np.arange(DMLO,DMHI+1,DMSTEP)
@@ -82,7 +97,6 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
     current_mask = glob.glob(mask_path)[0]
 
     if SUB:
-    
         # out parameter for prepsubband
         sub_out = os.path.join(subdir,clean_basename)
         sub_out_2 = os.path.join(prepdir,clean_basename)
@@ -92,8 +106,11 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
             tmpLoDM = lowDM[ddplan]
             sub_dmstep = DMsCall[ddplan] * dDM[ddplan]
             for call in range(int(calls[ddplan])):
-                lowDMprep = loDM[ddplan] + call * sub_dmstep
+                lowDMprep = lowDM[ddplan] + call * sub_dmstep
                 tmpsubdm = tmpLoDM + (call + .5) * sub_dmstep # wat? it works I guess 
+                # got it, the .5 takes the central DM value of the DM values in call
+                # and -sub and -subdm writes subbands at that DM
+                #subprocess.check_call(["prepsubband",
                 subprocess.check_call(["prepsubband",
                     FIL,
                     "-nobary",
@@ -104,14 +121,29 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
                     "-o",sub_out])
                 tmpsubname = "{}_DM{}0.sub[0-9]*".format(clean_basename,tmpsubdm)
                 tmpin = os.path.join(subdir,tmpsubname)
-                subprocess.check_call(["prepsubband",
+                # can't get subprocess to work for this, us os.system instead
+                """subprocess.Popen(["prepsubband",
                     "-lodm",str(lowDMprep),
                     "-dmstep",str(dDM[ddplan]),
+                    "-numdms",str(int(DMsCall[ddplan])),
                     "-downsamp",str(1),
                     "-nobary",
                     "-nsub",str(subb),
                     "-o",sub_out_2,
-                    tmpin]) 
+                    tmpin],
+                    shell=True,
+                    stdout=subprocess.PIPE) """
+                os_sys_string = "prepsubband -lodm {} "\
+                        "-dmstep {} "\
+                        "-numdms {} "\
+                        "-downsamp {} "\
+                        "-nobary "\
+                        "-nsub {} "\
+                        "-o {} "\
+                        "{}"\
+                        .format(str(lowDMprep),str(dDM[ddplan]),str(int(DMsCall[ddplan])),str(1),str(subb),sub_out_2,tmpin)
+                print "command {}".format(os_sys_string)
+                os.system(os_sys_string)
     else: 
 
         # dedisperse using prepdata
@@ -165,6 +197,9 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
 
     # write out waterfall candidates
     wf_file = waterfall_cands(file_to_waterfall)
+    if wf_file == 0:
+        print "nothing good here, skipping plotting"
+        return
 
     # make plots    
     plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
@@ -362,12 +397,15 @@ if __name__ == "__main__":
             help="Skip RFIfind [add later]") 
     parser.add_argument('--mask',
             help="Manual mask input [add later]")
-    parser.add_argument('--subband',action='store_true',
-            help="Use subbands (prepsubband)")
     args = parser.parse_args()
 
     # !!!!!!!!!!!!!! #
     # MISSING FEATURES
+    # MV SINGLE PULSE SEARCH FIG TO MAIN DIR
+    # SKIP RSYNC ON PREPSUB
+    # FIX PLOT MARKEr SIZES
+    # CREATE DIR FOR LOG
+    # ADD DDPLAN FOR PREPDATA
     # RE-INCORPORATE DDPLAN FROM OLD PIPE AT SOME POINT
     # PREPSUBBAND (WITH DDPLAN)
     # DDPLAN WITH PREPDATA?

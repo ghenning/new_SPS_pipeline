@@ -1,5 +1,6 @@
 import numpy as np
 import struct
+import os
 
 def header(afile):
     inread = ""
@@ -18,7 +19,8 @@ def get_headparam(head, parlist):
         'foff': ('d',8),
         'fch1': ('d',8),
         'tstart': ('d',8),
-        'ibeam': ('i',4)
+        'ibeam': ('i',4),
+        'nbits': ('i',4)
     }
     n = 0
     for i in parlist:
@@ -70,6 +72,18 @@ def M_I(FIL,MASK,DM,T,W):
     # find start and duration of reference
     dur2 = int(.1/tsamp)
     start2 = T - int(.5 * dur2)
+
+    # find out length of file, and see if we have reached the end
+    data_size = os.path.getsize(FIL) - len(head)
+    nbits = get_headparam(head,['nbits'])[0]
+    bytes_per_spectrum = nchan * nbits / 8
+    nspec = data_size / bytes_per_spectrum
+    grab_data_end = start2 + dur2
+    print "number of samples {}".format(nspec)
+    print "grab data end {}".format(grab_data_end)
+    if grab_data_end > nspec:
+        print "reached the end of the file"
+        return 999
 
     # get median of ref frame
     ref_data = grab_data(FIL,start2,dur2,nchan)

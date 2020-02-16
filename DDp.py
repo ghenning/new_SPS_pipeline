@@ -1,4 +1,7 @@
 import struct
+import os
+import subprocess
+import numpy as np
 
 def header(afile):
     inread = ""
@@ -42,7 +45,7 @@ def create_DDplan(FIL,DIR,LODM,HIDM):
     nchan = get_headparam(head,['nchans'])[0]
     fchan = get_headparam(head,['foff'])[0]
     tsamp = get_headparam(head,['tsamp'])[0]
-    ftop = get_headparam(head,['ftop'])[0]
+    ftop = get_headparam(head,['fch1'])[0]
     cfreq = ftop - (abs(fchan) * nchan * .5)
     bw = fchan * nchan
 
@@ -54,18 +57,26 @@ def create_DDplan(FIL,DIR,LODM,HIDM):
 
     # run DDplan.py
     try:
-        subprocess.check_call(["DDplan.py",
-            "-l",str(int(DDLO)),
-            "-d",str(int(DDHI)),
-            "-n",str(int(nchan)),
-            "-f",str(int(cfreq)),
-            "-b",str(int(bw)),
-            "-t",str(tsamp),
-            "-r",str(0.1),
-            "-o",DIR,
-            ">",DD_out])
+        with open(DD_out,'w') as F:
+                subprocess.check_call(["DDplan.py",
+                    "-l",str(int(LODM)),
+                    "-d",str(int(HIDM)),
+                    "-s",str(int(subb)),
+                    "-n",str(int(nchan)),
+                    "-f",str(int(cfreq)),
+                    "-b",str(int(abs(bw))),
+                    "-t",str(tsamp),
+                    "-r",str(0.1),
+                    "-o",DIR],
+                    stdout=F)
     except subprocess.CalledProcessError as err:
         print err
+
+    print "DD_out {}".format(DD_out)
+    if os.path.isfile(DD_out):
+        print "The file exists!"
+    else:
+        print "where have you gone mr file?"
 
     # old DDplan reader, too lazy to improve
     f = open(DD_out,'r')

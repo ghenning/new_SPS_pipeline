@@ -14,6 +14,7 @@ def plotstuff(ALL_SPS,GOOD_SPS,WF_CANDS):
     # check if txt files exist
     is_all = os.path.isfile(ALL_SPS)
     is_good = os.path.isfile(GOOD_SPS)
+    print "wf cands {}".format(WF_CANDS)
     is_wf = os.path.isfile(WF_CANDS)
 
     # grab data to plot
@@ -59,7 +60,7 @@ def plotstuff(ALL_SPS,GOOD_SPS,WF_CANDS):
 
     # plot wf cands
     if is_wf and np.count_nonzero(wf_dat)>0:
-        ax.scatter(wf_T,wf_DM,marker='x',color='red',linewdith=.5,
+        ax.scatter(wf_T,wf_DM,marker='x',color='red',linewidth=.5,
             s=2)#,label='waterfall cands')
 
     # save plot
