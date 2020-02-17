@@ -421,6 +421,7 @@ if __name__ == "__main__":
     #   see if it happens to other data as well
     # MANUAL MASK
     # OPTION FLAG FOR ZAPPYS
+    # ONLY DO CAND PLOTS FOR CANDS BENEATH M_I THRESHOLD
     # !!!!!!!!!!!!!! #
 
     # Time process
