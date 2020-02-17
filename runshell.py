@@ -37,7 +37,7 @@ def process_files(FILES):
                 print error
 
         # run launchmaker on each file
-        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,fil_res,args.code,args.job,args.log,args.longQ,args.dmstep,args.subband)
+        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,fil_res,args.code,args.job,args.log,args.longQ,args.dmstep,args.subband,args.downsamp)
 
         # make it executable
         subprocess.check_call(["chmod","+x","launch_me.sh"])
@@ -48,24 +48,29 @@ def process_files(FILES):
 if __name__ == "__main__":
     desc = """ I'm a description """
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--dir',
-            help="Directory to filterbanks")
-    parser.add_argument('--code',
-            help="Code directory")
-    parser.add_argument('--job', default="1519",
+    optional = parser._action_groups.pop()
+    required = parser.add_argument_group('required arguments')
+    required.add_argument('--dir',
+            help="Directory to filterbanks",required=True)
+    required.add_argument('--code',
+            help="Code directory",required=True)
+    required.add_argument('--lodm', type=float,
+            help="Low DM of search.",required=True)
+    required.add_argument('--hidm', type=float,
+            help="High DM of search.",required=True)
+    optional.add_argument('--dmstep', type=float, default=0.0,
+            help="DM step of search. Default uses DDplan.py for DM steps")
+    optional.add_argument('--downsamp',type=int,default=1,
+            help="Downsampling. Default is 1 with --dmstep, otherwise taken from DDplan.py")
+    optional.add_argument('--job', default="1519",
             help="Job name. Default: 1519")
-    parser.add_argument('--log', default="~/slurm_logs/",
+    optional.add_argument('--log', default="~/slurm_logs/",
             help="Path to slurm logs. Default: ~/slurm_logs/")
-    parser.add_argument('--longQ', action="store_true",
+    optional.add_argument('--longQ', action="store_true",
             help="Send to long queue. Default: False")
-    parser.add_argument('--lodm', type=int, default=500,
-            help="Low DM of search. Default: 500")
-    parser.add_argument('--hidm', type=int, default=600,
-            help="High DM of search. Default: 600")
-    parser.add_argument('--dmstep', type=int, default=2,
-            help="DM step of search. Default: 2")
-    parser.add_argument("--subband",action='store_true',
+    optional.add_argument("--subband",action='store_true',
             help="Use prepsubband with DDplan. Default: False")
+    parser._action_groups.append(optional)
     args = parser.parse_args()
 
     # grab filterbanks

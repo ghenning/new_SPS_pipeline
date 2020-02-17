@@ -11,12 +11,12 @@ import m_i
 import wrap_cand_plot
 import DDp
 
-def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
+def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
 
     if SUB:
         # prepsubband stuff
         # run DDplan.py and get search parameters
-        DDres,subb = DDp.create_DDplan(FIL,DIR,DMLO,DMHI)
+        DDres,subb = DDp.create_DDplan(FIL,DIR,DMLO,DMHI,SUB)
         # ddplan.py does a stupid thing sometimes and writes
         # its output differently than usual
         # this is to fix that 
@@ -40,9 +40,20 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
             DMsCall = DDres[:,6]
             calls = DDres[:,7]
         numjob = len(lowDM)
-    else: 
+    # no subbands
+    elif int(np.ceil(DMSTEP))==0: 
+            DDres,subb = DDp.create_DDplan(FIL,DIR,DMLO,DMHI,False)
+            lowDM = DDres[:,0]
+            hiDM = DDres[:,1]
+            dDM = DDres[:,2]
+            downsamp = DDres[:,3]
+            # create DM list
+            DM = np.arange(DMLO,DMHI+.001,dDM)
+    # manual DMstep
+    else:
         # create DM list
-        DM = np.arange(DMLO,DMHI+1,DMSTEP)
+        DM = np.arange(DMLO,DMHI+.001,DMSTEP)
+        downsamp = DOWNSAMP
 
     # sub-directories 
     prepdir = os.path.join(DIR,"prepsub")
@@ -158,13 +169,14 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,SUB):
             PD_o = "{}".format(prep_out)
             PD_m = "{}".format(current_mask)
             PD_file = "{}".format(FIL)
-
+            PD_ds = "{}".format(downsamp)
             # run prepdata
             subprocess.check_call(["prepdata",
                 "-nobary",
                 "-o",PD_o,
                 "-dm",PD_dm,
                 "-mask",PD_m,
+                "-downsamp",PD_ds,
                 PD_file])
 
     # prep single pulse search command
@@ -381,22 +393,25 @@ def mod_index(FIL,MASK,DIR,CANDFILE):
 if __name__ == "__main__":
     desc = """ I'm a description """
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--dir',
-            help="Filterbank directory")
-    parser.add_argument('--outdir',
-            help="Result directory [redundant?]")
-    parser.add_argument('--lodm',type=int,
-            help="Minimum DM for search")
-    parser.add_argument('--hidm',type=int,
-            help="Maximum DM for search")
-    parser.add_argument('--dmstep',type=int, default=1,
-            help="DM step")
-    parser.add_argument('--subband',action='store_true',
-            help="Use subbands and prepsubband (and DDplan.py)")
-    parser.add_argument('--nomask',action='store_true',
-            help="Skip RFIfind [add later]") 
-    parser.add_argument('--mask',
+    optional = parser._action_groups.pop()
+    required = parser.add_argument_group('required arguments')
+    required.add_argument('--dir',
+            help="Filterbank directory",required=True)
+    required.add_argument('--lodm',type=float,
+            help="Minimum DM for search",required=True)
+    required.add_argument('--hidm',type=float,
+            help="Maximum DM for search",required=True)
+    optional.add_argument('--dmstep',type=float, default=0.0,
+            help="Manually input DM step. Default uses DDplan.py DM steps")
+    optional.add_argument('--downsamp',type=int, default=1,
+            help="Manually input downsampling. Default is 1 with --dmstep, otherwise taken from DDplan.py")
+    optional.add_argument('--subband',action='store_true',
+            help="Use subbands with prepsubband (and DDplan.py)")
+    optional.add_argument('--noRFIfind',action='store_true',
+            help="Skip RFIfind, use with manual mask input from --mask [add later]") 
+    optional.add_argument('--mask',
             help="Manual mask input [add later]")
+    parser._action_groups.append(optional)
     args = parser.parse_args()
 
     # !!!!!!!!!!!!!! #
@@ -404,12 +419,8 @@ if __name__ == "__main__":
     # DOUBLE CHECK WHAT M_I IS LOOKING AT (WHERE In FILE)
     #   seems fine, but is crashing in some cases (crap holiday data)
     #   see if it happens to other data as well
-    # ADD DDPLAN FOR PREPDATA
-    # DDPLAN WITH PREPDATA?
     # MANUAL MASK
     # OPTION FLAG FOR ZAPPYS
-    # ADD MISSING INPUT ERRORS [later]
-    # optional vs required args
     # !!!!!!!!!!!!!! #
 
     # Time process
@@ -428,7 +439,7 @@ if __name__ == "__main__":
 
     # process filterbank
     ##process_one(fil,args.dir,dms)
-    process_one(fil,args.dir,args.lodm,args.hidm,args.dmstep,args.subband)
+    process_one(fil,args.dir,args.lodm,args.hidm,args.dmstep,args.downsamp,args.subband)
 
     # end message
     end_msg = "great success, all done!"

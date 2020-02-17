@@ -35,7 +35,7 @@ def get_headparam(head, parlist):
         return parlist
  
 
-def create_DDplan(FIL,DIR,LODM,HIDM):
+def create_DDplan(FIL,DIR,LODM,HIDM,SUB):
     
     # read header
     with open(FIL,'r') as F:
@@ -56,21 +56,39 @@ def create_DDplan(FIL,DIR,LODM,HIDM):
     DD_out = os.path.join(DIR,"DDPlan.txt")
 
     # run DDplan.py
-    try:
-        with open(DD_out,'w') as F:
-                subprocess.check_call(["DDplan.py",
-                    "-l",str(int(LODM)),
-                    "-d",str(int(HIDM)),
-                    "-s",str(int(subb)),
-                    "-n",str(int(nchan)),
-                    "-f",str(int(cfreq)),
-                    "-b",str(int(abs(bw))),
-                    "-t",str(tsamp),
-                    "-r",str(0.1),
-                    "-o",DIR],
-                    stdout=F)
-    except subprocess.CalledProcessError as err:
-        print err
+    # for subbands
+    if SUB:
+        try:
+            with open(DD_out,'w') as F:
+                    subprocess.check_call(["DDplan.py",
+                        "-l",str(int(LODM)),
+                        "-d",str(int(HIDM)),
+                        "-s",str(int(subb)),
+                        "-n",str(int(nchan)),
+                        "-f",str(int(cfreq)),
+                        "-b",str(int(abs(bw))),
+                        "-t",str(tsamp),
+                        "-r",str(0.1),
+                        "-o",DIR],
+                        stdout=F)
+        except subprocess.CalledProcessError as err:
+            print err
+    # no subbands
+    else:
+        try:
+            with open(DD_out,'w') as F:
+                    subprocess.check_call(["DDplan.py",
+                        "-l",str(int(LODM)),
+                        "-d",str(int(HIDM)),
+                        "-n",str(int(nchan)),
+                        "-f",str(int(cfreq)),
+                        "-b",str(int(abs(bw))),
+                        "-t",str(tsamp),
+                        "-r",str(0.1),
+                        "-o",DIR],
+                        stdout=F)
+        except subprocess.CalledProcessError as err:
+            print err
 
     print "DD_out {}".format(DD_out)
     if os.path.isfile(DD_out):

@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND):
+def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND,DS):
     with open("launch_me.sh",'w') as F:
         F.write("#!/bin/bash -l \n")
         F.write("\n")
@@ -32,6 +32,7 @@ def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND):
         F.write("DDl=\"{}\" \n".format(str(LODM)))
         F.write("DDh=\"{}\" \n".format(str(HIDM)))
         F.write("step=\"{}\" \n".format(str(STEP)))
+        F.write("downsamp=\"{}\" \n".format(str(DS)))
         ###filly = os.path.join(FILPATH,FIL + ".fil")
         F.write("orig_fil=\"{}\" \n".format(FIL))
         #F.write("orig_fil=\"" + FIL + ".fil\" \n")
@@ -57,7 +58,7 @@ def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND):
         if SUBBAND:
             F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --subband \n")
         else:
-            F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step \n")
+            F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step --downsamp $downsamp \n")
         F.write("\n")
         F.write("echo \"mv single pulse search plot to main dir\" \n")
         F.write("mv $spsplot $tmpdir \n")
