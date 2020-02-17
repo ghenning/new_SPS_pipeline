@@ -153,7 +153,7 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
                         "-o {} "\
                         "{}"\
                         .format(str(lowDMprep),str(dDM[ddplan]),str(int(DMsCall[ddplan])),str(1),str(subb),sub_out_2,tmpin)
-                print "command {}".format(os_sys_string)
+                #print "command {}".format(os_sys_string)
                 os.system(os_sys_string)
     else: 
 
@@ -169,7 +169,7 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
             PD_o = "{}".format(prep_out)
             PD_m = "{}".format(current_mask)
             PD_file = "{}".format(FIL)
-            PD_ds = "{}".format(downsamp)
+            PD_ds = "{}".format(int(downsamp))
             # run prepdata
             subprocess.check_call(["prepdata",
                 "-nobary",
