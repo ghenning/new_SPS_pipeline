@@ -21,7 +21,7 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
         # its output differently than usual
         # this is to fix that 
         # found out, it happens if you don't have the -s flag
-        if len(DDres==1) and int(DDres[0,-1])==0:
+        """if len(DDres==1) and int(DDres[0,-1])==0:
             lowDM = DDres[:,0]
             hiDM = DDres[:,1]
             dDM = DDres[:,2]
@@ -30,15 +30,15 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
             numDMs = DDres[:,4]
             DMsCall = numDMs
             calls = np.ones(len(lowDM))
-        else: 
-            lowDM = DDres[:,0]
-            hiDM = DDres[:,1]
-            dDM = DDres[:,2]
-            downsamp = DDres[:,3]
-            dsubDM = DDres[:,4]
-            numDMs = DDres[:,5]
-            DMsCall = DDres[:,6]
-            calls = DDres[:,7]
+        else: """
+        lowDM = DDres[:,0]
+        hiDM = DDres[:,1]
+        dDM = DDres[:,2]
+        downsamp = DDres[:,3]
+        dsubDM = DDres[:,4]
+        numDMs = DDres[:,5]
+        DMsCall = DDres[:,6]
+        calls = DDres[:,7]
         numjob = len(lowDM)
     # no subbands
     elif int(np.ceil(DMSTEP))==0: 
