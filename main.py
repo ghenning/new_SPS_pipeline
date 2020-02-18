@@ -392,7 +392,22 @@ def mod_index(FIL,MASK,DIR,CANDFILE):
     return m_i_file
 
 if __name__ == "__main__":
-    desc = """ I'm a description """
+    desc = """ Search for single pulses in a filterbank file.
+        It processes only one file from a directory, as it is
+        designed to work with the runshell.py wrapper for
+        Slurm usage on clusters. It still is simple to use it without the
+        wrapper. \n
+        What is happening under the hood:\n
+        Grabs one filterbank from directory. \n
+        Runs RFIfind on data. \n
+        Dedisperses data (prepdata or prepsubband depending on
+        options used. \n
+        Searches for single pulses using single_pulse_search.py. \n
+        Returns files with high signal to noise, sorted in time,
+        best candidates with a calculated modulation index,
+        DM over time plot, colored version of the single_pulse_search.py
+        plot, and dedispersed time series and dynamic spectra plots
+        for the best candidates """
     parser = argparse.ArgumentParser(description=desc)
     optional = parser._action_groups.pop()
     required = parser.add_argument_group('required arguments')

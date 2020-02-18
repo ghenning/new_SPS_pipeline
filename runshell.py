@@ -46,7 +46,9 @@ def process_files(FILES):
         subprocess.check_call(["sbatch","./launch_me.sh"])
 
 if __name__ == "__main__":
-    desc = """ I'm a description """
+    desc = """ Slurm wrapper for main.py. Reads in a directory
+        of filterbanks and processes each one as a Slurm job. 
+        To change job parameters, change launchmaker.py."""
     parser = argparse.ArgumentParser(description=desc)
     optional = parser._action_groups.pop()
     required = parser.add_argument_group('required arguments')
