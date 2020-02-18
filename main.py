@@ -217,9 +217,9 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
     plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
 
     # calculate modulation index
-    mod_index(FIL,current_mask,DIR,wf_file)
+    m_i_file = mod_index(FIL,current_mask,DIR,wf_file)
 
-    wrap_cand_plot.plot_cands(FIL,current_mask,DIR,wf_file)
+    wrap_cand_plot.plot_cands(FIL,current_mask,DIR,m_i_file)
 
 # find all .singlepulse files
 def sps_files(DIR):
@@ -389,6 +389,7 @@ def mod_index(FIL,MASK,DIR,CANDFILE):
                 .format(DM,Sig,Time,int(T),int(W),M)
         with open(m_i_file,'a') as F:
             F.write(str2file)
+    return m_i_file
 
 if __name__ == "__main__":
     desc = """ I'm a description """
@@ -421,7 +422,6 @@ if __name__ == "__main__":
     #   see if it happens to other data as well
     # MANUAL MASK
     # OPTION FLAG FOR ZAPPYS
-    # ONLY DO CAND PLOTS FOR CANDS BENEATH M_I THRESHOLD
     # !!!!!!!!!!!!!! #
 
     # Time process

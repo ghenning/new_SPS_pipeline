@@ -65,26 +65,31 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
 
     # plot directory
     plt_dir = os.path.join(DIR,"cand_plots")
+
+    # modulation index threshold
+    m_thresh = np.sqrt(nchan)/7. 
     
     # loop through candidates and plot each one
     for cand in data:
         DM = cand[0]
         T = int(cand[3])
+        m_i = cand[5]
         
-        # call generalplotter.py 
-        try:
-            subprocess.check_call(["python","generalplotter.py",
-                "--ftop",str(ftop),
-                "--fchan",str(fchan),
-                "--nchan",str(nchan),
-                "--samptime",str(tsamp),
-                "--data",FIL,
-                "--fscrunch",str(fscrunch),
-                "--tscrunch",str(tscrunch),
-                "--out",plt_dir,
-                "--dm",str(DM),
-                "--samp",str(T),
-                "--mask",MASK])
-        except subprocess.CalledProcessError as err:
-            print err
+        # call generalplotter.py if modulation index is less than threshold
+        if m_i <= m_thresh:
+            try:
+                subprocess.check_call(["python","generalplotter.py",
+                    "--ftop",str(ftop),
+                    "--fchan",str(fchan),
+                    "--nchan",str(nchan),
+                    "--samptime",str(tsamp),
+                    "--data",FIL,
+                    "--fscrunch",str(fscrunch),
+                    "--tscrunch",str(tscrunch),
+                    "--out",plt_dir,
+                    "--dm",str(DM),
+                    "--samp",str(T),
+                    "--mask",MASK])
+            except subprocess.CalledProcessError as err:
+                print err
 
