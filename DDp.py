@@ -58,6 +58,7 @@ def create_DDplan(FIL,DIR,LODM,HIDM,SUB):
     # run DDplan.py
     # for subbands
     if SUB:
+        print "SUBBAND"
         try:
             with open(DD_out,'w') as F:
                     subprocess.check_call(["DDplan.py",
@@ -75,6 +76,7 @@ def create_DDplan(FIL,DIR,LODM,HIDM,SUB):
             print err
     # no subbands
     else:
+        print "NO SUBBAND"
         try:
             with open(DD_out,'w') as F:
                     subprocess.check_call(["DDplan.py",
