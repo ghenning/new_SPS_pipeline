@@ -335,14 +335,19 @@ if __name__=="__main__":
             zaprange = np.arange(zapstart,zapend)
             dat[zaprange,:] = 0
     print "data shape {}".format(np.shape(dat))
-    plotn = "{}_time{}_DM{}_beam{}_bp.png".format(base,timeint,int(opts.DM),opts.beamno)
-    plotname = os.path.join(opts.out,plotn)
-    print plotname 
-    plot_bandpass(dat,plotname)
     plotn = "{}_time{}_DM{}_beam{}_tsDD.png".format(base,timeint,int(opts.DM),opts.beamno)
     plotname = os.path.join(opts.out,plotn)
     print plotname 
     plot_dedisp_ts(opts.nchan,opts.ftop,opts.fchan,opts.DM,opts.samptime,sampuse,dat,plotname)
+    plotn = "{}_time{}_DM{}_beam{}_bp.png".format(base,timeint,int(opts.DM),opts.beamno)
+    plotname = os.path.join(opts.out,plotn)
+    print plotname 
+    plot_bandpass(dat,plotname)
+    # scale data 
+    # divide each channel by its median
+    dat = np.divide(dat.T,np.median(dat,axis=1)).T
+    # divide each channel by its max
+    #dat = np.divide(dat.T,np.max(dat,axis=1)).T
     plotn = "{}_time{}_DM{}_beam{}_dynspec.png".format(base,timeint,int(opts.DM),opts.beamno)
     plotname = os.path.join(opts.out,plotn)
     print plotname 
@@ -362,6 +367,11 @@ if __name__=="__main__":
             zapend = int(zapchunk.split(':')[1])
             zaprange = np.arange(zapstart,zapend)
             dat[zaprange,:] = 0
+    # scale data 
+    # divide each channel by its median
+    dat = np.divide(dat.T,np.median(dat,axis=1)).T
+    # divide each channel by its max
+    #dat = np.divide(dat.T,np.max(dat,axis=1)).T
     print "data shape {}".format(np.shape(dat))
     plotn = "{}_time{}_DM{}_beam{}_dynspecF.png".format(base,timeint,int(opts.DM),opts.beamno)
     plotname = os.path.join(opts.out,plotn)
