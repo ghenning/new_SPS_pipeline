@@ -74,6 +74,8 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
     clean_basename = os.path.splitext(os.path.basename(FIL))[0]
     clean_fullname = os.path.splitext(FIL)[0]
       
+    # no manual zapping
+    zappys = "0:1"
     # standard zaps CX receiver
     zappys = "0:51,"\
             "1021:1026,"\
@@ -84,6 +86,13 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
             "3067:3074,"\
             "3717:3865,"\
             "3888:3891"
+    # standard zaps CX receiver, only FB0
+    zappys = "0:5,"\
+            "670:737,"\
+            "768:808,"\
+            "1019:1026,"\
+            "1669:1817,"\
+            "1840:1843"
     # cut the upper band
     #zappys = "0:2048,"\
             #"2209:2213,"\
