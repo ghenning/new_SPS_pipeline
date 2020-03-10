@@ -62,14 +62,14 @@ def dispdelay(DM,LOFREQ,HIFREQ):
     return delay
 
 def DDdata(DATA,DM,FTOP,FCHAN,NCHAN,TSAMP,TO_USE):
-    DD = np.zeros((NCHAN,TO_USE))
-    for chan in np.arange(NCHAN):
+    DD = np.zeros((int(NCHAN),int(TO_USE)))
+    for chan in np.arange(int(NCHAN)):
         chandata = DATA[chan,:]
         chanfreq = FTOP - chan * FCHAN
         dmdelay = dispdelay(DM,chanfreq,FTOP) # in ms
         dmdelay_s = dmdelay * 1e-3 # in seconds 
         dmdelay_samp = int(np.round(dmdelay_s/TSAMP))
-        DD[chan,:] = chandata[dmdelay_samp : dmdelay_samp + TO_USE] 
+        DD[chan,:] = chandata[dmdelay_samp : dmdelay_samp + int(TO_USE)] 
     return DD
 
 def M_I(FIL,MASK,DM,T,W):
