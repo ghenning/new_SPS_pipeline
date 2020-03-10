@@ -56,6 +56,22 @@ def read_mask(MASK):
         mask_zap_chans = np.fromfile(x,dtype=np.int32,count=nzap)
     return mask_zap_chans
 
+def dispdelay(DM,LOFREQ,HIFREQ):
+    dconst = 4.15e+06
+    delay = DM * dconst * (1.0 / LOFREQ**2 - 1.0 / HIFREQ**2) # in ms
+    return delay
+
+def DDdata(DATA,DM,FTOP,FCHAN,NCHAN,TSAMP,TO_USE):
+    DD = np.zeros((NCHAN,TO_USE))
+    for chan in np.arange(NCHAN):
+        chandata = DATA[chan,:]
+        chanfreq = FTOP - chan * FCHAN
+        dmdelay = dispdelay(DM,chanfreq,FTOP) # in ms
+        dmdelay_s = dmdelay * 1e-3 # in seconds 
+        dmdelay_samp = int(np.round(dmdelay_s/TSAMP))
+        DD[chan,:] = chandata[dmdelay_samp : dmdelay_samp + TO_USE] 
+    return DD
+
 def M_I(FIL,MASK,DM,T,W):
 
     # read the header
@@ -66,12 +82,24 @@ def M_I(FIL,MASK,DM,T,W):
     tsamp = get_headparam(head,['tsamp'])[0]
     nchan = get_headparam(head,['nchans'])[0]
 
+    # find top and bottom freqs of band
+    hifreq = get_headparam(head,['fch1'])[0]
+    chan_bw = get_headparam(head,['foff'])[0]
+    lofreq = hifreq - (abs(chan_bw) * nchan)
+
+    # find dispersion sweep of cand
+    sweep = dispdelay(DM,lofreq,hifreq)  # in ms
+    sweep_s = sweep * 1e-3 # in seconds
+    sweep_samples = int(np.round(sweep_s/tsamp)) + W
+
     # find start and duration of candidate
     start1 = T - int((.5 * W))
 
     # find start and duration of reference
-    dur2 = int(.1/tsamp)
-    start2 = T - int(.5 * dur2)
+    # ref frame is sweep +- .05 seconds
+    pad2 = int(.1/tsamp)
+    dur2 = pad2 + sweep_samples
+    start2 = T - int(.5 * (pad2 + W))
 
     # find out length of file, and see if we have reached the end
     data_size = os.path.getsize(FIL) - len(head)
@@ -86,7 +114,11 @@ def M_I(FIL,MASK,DM,T,W):
         return 999
 
     # get median of ref frame, get data
-    ref_data = grab_data(FIL,start2,dur2,nchan)
+    ref_data_tmp = grab_data(FIL,start2,dur2,nchan)
+
+    # dedisperse data
+    samps_to_use = pad2 + W
+    ref_data = DDdata(ref_data_tmp,DM,hifreq,abs(chan_bw),nchan,tsamp,samps_to_use)
 
     # read mask
     mask = read_mask(MASK)
@@ -99,7 +131,10 @@ def M_I(FIL,MASK,DM,T,W):
     medi = np.median(np.ndarray.flatten(ref_data[np.nonzero(ref_data)]))
 
     # get cand data
-    data = grab_data(FIL,start1,W,nchan)
+    data_tmp = grab_data(FIL,start1,sweep_samples,nchan)
+
+    # dedisperse data
+    data = DDdata(data_tmp,DM,hifreq,abs(chan_bw),nchan,tsamp,W)
     
     # replace zaps with median
     data[mask,:] = medi
