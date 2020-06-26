@@ -10,6 +10,7 @@ import plotter
 import m_i
 import wrap_cand_plot
 import DDp
+import struct
 
 def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
 
@@ -47,13 +48,26 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
             hiDM = DDres[:,1]
             dDM = DDres[:,2]
             downsamp = DDres[:,3]
-            # create DM list
-            DM = np.arange(DMLO,DMHI+.001,dDM)
+            print "lDM {}".format(lowDM)
+            print "hDM {}".format(hiDM)
+            print "dDM {}".format(dDM)
+            print "downsamp {}".format(downsamp)
+            # create DM and downsample lists
+            DM = []
+            DownSamp = []
+            for i in range(np.shape(lowDM)[0]):
+                dmtmp = np.arange(lowDM[i],hiDM[i],dDM[i])
+                DM.extend(dmtmp)
+                DownSamp.extend(np.ones(np.shape(dmtmp))*downsamp[i]) 
+            DM = np.asarray(DM)
+            DownSamp = np.asarray(DownSamp)
+            ###DM = np.arange(DMLO,DMHI+.001,dDM)
     # manual DMstep
     else:
         # create DM list
         DM = np.arange(DMLO,DMHI+.001,DMSTEP)
         downsamp = DOWNSAMP
+        DownSamp = np.ones(np.shape(DM))*DOWNSAMP
 
     # sub-directories 
     prepdir = os.path.join(DIR,"prepsub")
@@ -74,18 +88,6 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
     clean_basename = os.path.splitext(os.path.basename(FIL))[0]
     clean_fullname = os.path.splitext(FIL)[0]
       
-    # no manual zapping
-    zappys = "0:1"
-    # standard zaps CX receiver
-    zappys = "0:51,"\
-            "1021:1026,"\
-            "2042:2053,"\
-            "2196:2227,"\
-            "2718:2785,"\
-            "2816:2856,"\
-            "3067:3074,"\
-            "3717:3865,"\
-            "3888:3891"
     # standard zaps CX receiver, only FB0
     zappys = "0:5,"\
             "670:737,"\
@@ -101,6 +103,18 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
             #"3067:3074,"\
             #"3717:3865,"\
             #"3888:3891"
+    # no manual zapping
+    zappys = "0:1"
+    # standard zaps CX receiver
+    zappys = "0:51,"\
+            "1016:1031,"\
+            "2037:2058,"\
+            "2191:2232,"\
+            "2713:2790,"\
+            "2811:2861,"\
+            "3062:3079,"\
+            "3712:3870,"\
+            "3882:3896"
 
     # prep RFIfind commands
     RFI_t = "2.0"
@@ -176,7 +190,7 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
     else: 
 
         # dedisperse using prepdata
-        for dm in DM:
+        for dm,downsamp in zip(DM,DownSamp):
 
             # out parameter for prepdata
             name_dm = "{}_DM{}".format(clean_basename,str(dm))
@@ -224,20 +238,88 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
     # find high SN cands
     # sort in time
     file_to_waterfall, all_cands = giantsps(sp_files,prepdir,DIR)
+    #try:
+        #file_to_waterfall, all_cands = giantsps(sp_files,prepdir,DIR)
+    #except IndexError as error:
+        #print error
+
+    # find header param
+    with open(FIL,'r') as F:
+        head = header(F)
+    tsamp = get_headparam(head,['tsamp'])[0]
 
     # write out waterfall candidates
-    wf_file = waterfall_cands(file_to_waterfall)
+    wf_file = waterfall_cands(file_to_waterfall,tsamp)
     if wf_file == 0:
         print "nothing good here, skipping plotting"
-        return
+    #try:
+        #wf_file = waterfall_cands(file_to_waterfall)
+        #if wf_file == 0:
+            #print "nothing good here, skipping plotting"
+            #return
+    #except UnboundLocalError as error:
+        #print error
 
     # make plots    
-    plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
+    if wf_file != 0:
+        plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
+    #try:
+        #plotter.plotstuff(all_cands,file_to_waterfall,wf_file)
+    #except ValueError as error:
+        #print error
 
     # calculate modulation index
-    m_i_file = mod_index(FIL,current_mask,DIR,wf_file)
+    m_i_file = 0
+    if wf_file != 0:
+        m_i_file = mod_index(FIL,current_mask,DIR,wf_file)
+    #no_m_i = False
+    #try:
+        #m_i_file = mod_index(FIL,current_mask,DIR,wf_file)
+    #except IOError as error:
+        #print error
+        #no_m_i = True
+    
+    if m_i_file != 0:
+        wrap_cand_plot.plot_cands(FIL,current_mask,DIR,m_i_file)
+    #if not no_m_i: 
+        #try:
+            #wrap_cand_plot.plot_cands(FIL,current_mask,DIR,m_i_file)
+        #except ValueError as error:
+            #print error
 
-    wrap_cand_plot.plot_cands(FIL,current_mask,DIR,m_i_file)
+# header parameters
+def header(afile):
+    inread = ""
+    while True:
+        tmp = afile.read(1)
+        inread = inread + tmp 
+        flag = inread.find('HEADER_END')
+        if flag != -1: 
+            break
+    return inread
+
+def get_headparam(head, parlist):
+    how2parse={
+        'nchans': ('i',4),
+        'tsamp': ('d',8),
+        'foff': ('d',8),
+        'fch1': ('d',8),
+        'tstart': ('d',8),
+        'ibeam': ('i',4),
+        'nbits': ('i',4)
+    }
+    n = 0
+    for i in parlist:
+        i1 = head.find(i)
+        i2 = i1 + len(i)
+        nbytes = how2parse[i][1]
+        cstr = how2parse[i][0]
+
+        val = struct.unpack(cstr, head[i2:i2+nbytes])[0]
+        parlist[n] = val
+        n += 1
+        return parlist
+
 
 # find all .singlepulse files
 def sps_files(DIR):
@@ -304,7 +386,7 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
 
     # load file created to sort (all sps)
     asps = np.loadtxt(all_sps)
-    
+
     # sort the file by time
     if asps.any():
         asps = asps[asps[:,2].argsort()]
@@ -317,6 +399,10 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
     # load the file created to sort
     gsps = np.loadtxt(goodspsfile) 
 
+    # fix weird behaviour with one-liners
+    if gsps.ndim==1:
+        gsps = np.reshape(gsps,(1,len(gsps)))
+
     # sort the file by time
     if gsps.any():
         gsps = gsps[gsps[:,2].argsort()]
@@ -328,7 +414,7 @@ def giantsps(SPFILES,PREPDIR,DIR,THRESH=8.0):
     return goodsps_sorted, all_sps_sorted
 
 # write highest SN cands to file
-def waterfall_cands(FILE):
+def waterfall_cands(FILE,sampsize):
 
     # load high SN cand file
     goodsps = np.loadtxt(FILE)
@@ -336,9 +422,12 @@ def waterfall_cands(FILE):
         str2return = "No good single pulses"
         print "{}".format(str2return)
         return 0 
+    # fix weird behaviour with one-liners
+    if np.ndim(goodsps)==1:
+        goodsps = np.reshape(goodsps,(1,len(goodsps)))
 
     # hardcoded time resolution
-    sampsize = 131e-6 
+    #sampsize = 131e-6 
 
     # prep array
     wf_cands = np.zeros((1,5))
@@ -348,6 +437,7 @@ def waterfall_cands(FILE):
     # within a certain time period
     # now set to 1 sec
     elecounter = 0
+    print "goodsps shape {}".format(np.shape(goodsps))
     while elecounter<len(goodsps):
         timgrp, = np.where(abs(goodsps[elecounter:,2]-1.)<=goodsps[elecounter,2])
         timgrp += elecounter
@@ -395,11 +485,19 @@ def mod_index(FIL,MASK,DIR,CANDFILE):
         F.write(head)
         F.write("\n")
 
+    # find header param
+    with open(FIL,'r') as F:
+        head = header(F)
+    tsamp = get_headparam(head,['tsamp'])[0]
+
     # calculate modulation index for each candidate
     for cand in data:
         DM = cand[0]
-        T = cand[3]
+        T = cand[3] # presto sample is sample/downsamp
+        T = int(cand[2]/tsamp)
         W = cand[4]
+        print "FIL {}{}MASK {}{}DM {}{}T {}{}W {}"\
+            .format(FIL,'\n',MASK,'\n',DM,'\n',T,'\n',W)
         M = m_i.M_I(FIL,MASK,DM,T,W) 
         Sig = cand[1]
         Time = cand[2]

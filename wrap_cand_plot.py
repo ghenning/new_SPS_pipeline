@@ -72,11 +72,13 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
     # loop through candidates and plot each one
     for cand in data:
         DM = cand[0]
-        T = int(cand[3])
+        T = int(cand[3]) # PRESTO sample number is sample/downsamp
+        T = int(cand[2]/samptime)
         m_i = cand[5]
         
         # call generalplotter.py if modulation index is less than threshold
-        if m_i <= m_thresh:
+        #if m_i <= m_thresh:
+        if m_i <= (m_thresh+5):
             try:
                 subprocess.check_call(["python","generalplotter.py",
                     "--ftop",str(ftop),

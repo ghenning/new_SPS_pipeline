@@ -43,7 +43,9 @@ def grab_data(FILE,STARTSAMP,NUMSAMP,NCHAN,DTYPE=np.uint8,FIL=True):
             print "hi there, I'm reading a filterbank header now"
             thehead = header(F)
             headlen = len(thehead)
-        F.seek(headlen+NCHAN*STARTSAMP)
+        print "headlen {}{}NCHAN {}{}STARTSAMP{}"\
+            .format(headlen,'\n',NCHAN,'\n',STARTSAMP)
+        F.seek(int(headlen+NCHAN*STARTSAMP))
         data = np.fromfile(F,dtype=DTYPE,count=int(NCHAN*NUMSAMP))
         data = np.reshape(data,(-1,NCHAN)).T
     return data
@@ -94,12 +96,14 @@ def M_I(FIL,MASK,DM,T,W):
 
     # find start and duration of candidate
     start1 = T - int((.5 * W))
+    start1 = max(start1,0)
 
     # find start and duration of reference
     # ref frame is sweep +- .05 seconds
     pad2 = int(.1/tsamp)
     dur2 = pad2 + sweep_samples
     start2 = T - int(.5 * (pad2 + W))
+    start2 = max(start2,0)
 
     # find out length of file, and see if we have reached the end
     data_size = os.path.getsize(FIL) - len(head)
@@ -114,6 +118,8 @@ def M_I(FIL,MASK,DM,T,W):
         return 999
 
     # get median of ref frame, get data
+    print "FIL {}{}start {}{}dur {}{}nchan {}"\
+        .format(FIL,'\n',start2,'\n',dur2,'\n',nchan)
     ref_data_tmp = grab_data(FIL,start2,dur2,nchan)
 
     # dedisperse data
