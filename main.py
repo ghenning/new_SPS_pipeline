@@ -116,6 +116,17 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
             "3712:3870,"\
             "3882:3896"
 
+    ## standard zaps cx receiver reverse test
+    #zappys = "200:214,"\
+    #        "226:384,"\
+    #        "1017:1034,"\
+    #        "1235:1285,"\
+    #        "1306:1383,"\
+    #        "1864:1905,"\
+    #        "2038:2059,"\
+    #        "3065:3080,"\
+    #        "4045:4096"
+
     # prep RFIfind commands
     RFI_t = "2.0"
     RFI_o = "{}".format(clean_fullname)
@@ -439,7 +450,8 @@ def waterfall_cands(FILE,sampsize):
     elecounter = 0
     print "goodsps shape {}".format(np.shape(goodsps))
     while elecounter<len(goodsps):
-        timgrp, = np.where(abs(goodsps[elecounter:,2]-1.)<=goodsps[elecounter,2])
+        #timgrp, = np.where(abs(goodsps[elecounter:,2]-1.)<=goodsps[elecounter,2])
+        timgrp, = np.where(abs(goodsps[elecounter:,2]-.001)<=goodsps[elecounter,2])
         timgrp += elecounter
         try:
             maxval, = np.where(goodsps[timgrp,1]==goodsps[timgrp,1].max())

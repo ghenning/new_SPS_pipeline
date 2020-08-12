@@ -1,8 +1,8 @@
 #!/bin/bash -l 
 
-#SBATCH -o /hercules/results/ghil/1620/20200619/logs/1620.err.%j 
+#SBATCH -o /hercules/results/ghil/1720/20200809/logs/1720.err.%j 
 #SBATCH -D ./ 
-#SBATCH -J 1620 
+#SBATCH -J 1720 
 #SBATCH --partition=long.q 
 #SBATCH --nodes=1 
 #SBATCH --cpus-per-task=8 
@@ -14,20 +14,20 @@ echo "Space on node:"
 df -h 
 
 
-DDl="460.0" 
-DDh="660.0" 
+DDl="300.0" 
+DDh="400.0" 
 step="0.0" 
 downsamp="1" 
-orig_fil="/hercules/results/ghil/1620/20200619/FRB121102_20200619_5_merged_4577636_9155272.fil" 
-tmpdir="/tmp/FRB121102_20200619_5_merged_4577636_9155272" 
-tmpfil=$tmpdir"/FRB121102_20200619_5_merged_4577636_9155272.fil" 
-result_dir="/hercules/results/ghil/1620/20200619/results/FRB121102_20200619_5_merged_4577636_9155272" 
+orig_fil="/hercules/results/ghil/1720/20200809/R3_20200809_1_merged_13732910_18310546.fil" 
+tmpdir="/tmp/R3_20200809_1_merged_13732910_18310546" 
+tmpfil=$tmpdir"/R3_20200809_1_merged_13732910_18310546.fil" 
+result_dir="/hercules/results/ghil/1720/20200809/results/R3_20200809_1_merged_13732910_18310546" 
 code_dir="/hercules/u/ghil/NEW_PIPE_TEST/new_SPS_pipeline/" 
 prepdir=$tmpdir"/prepsub" 
-f="FRB121102_20200619_5_merged_4577636_9155272.fil" 
+f="R3_20200809_1_merged_13732910_18310546.fil" 
 p="prepsub" 
 s="subdir" 
-spsplot=$prepdir"/FRB121102_20200619_5_merged_4577636_9155272_singlepulse.ps" 
+spsplot=$prepdir"/R3_20200809_1_merged_13732910_18310546_singlepulse.ps" 
 
 if [ ! -d "$tmpdir" ]; then 
 	 mkdir $tmpdir 

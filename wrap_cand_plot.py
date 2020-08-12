@@ -78,7 +78,8 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
         
         # call generalplotter.py if modulation index is less than threshold
         #if m_i <= m_thresh:
-        if m_i <= (m_thresh+5):
+        ###if m_i <= (m_thresh+5):
+        if m_i <= (m_thresh+10):
             try:
                 subprocess.check_call(["python","generalplotter.py",
                     "--ftop",str(ftop),
