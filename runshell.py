@@ -37,7 +37,7 @@ def process_files(FILES):
                 print error
 
         # run launchmaker on each file
-        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,fil_res,args.code,args.job,args.log,args.longQ,args.dmstep,args.subband,args.downsamp)
+        launchmaker.create_script(args.lodm,args.hidm,args.dir,fil,fil_res,args.code,args.job,args.log,args.longQ,args.dmstep,args.subband,args.downsamp,args.plotsub,args.plotdown,args.mask,args.zaps)
 
         # make it executable
         subprocess.check_call(["chmod","+x","launch_me.sh"])
@@ -72,6 +72,14 @@ if __name__ == "__main__":
             help="Send to long queue. Default: False")
     optional.add_argument("--subband",action='store_true',
             help="Use prepsubband with DDplan. Default: False")
+    optional.add_argument('--plotsub',type=int,
+            help="Cand plot subbands, default 128",default=128)
+    optional.add_argument('--plotdown',type=int,
+            help="Cand plot downsamp, default = 8",default=8)
+    optional.add_argument('--mask',type=str,
+            help="Input an existing rfifind mask")
+    optional.add_argument('--zaps',type=str,
+            help="Manual zapping ('cx' for CX receiver, 'seven' for 7beam receiver, 'x:y-x:y-x:y' for manual zaps)")
     parser._action_groups.append(optional)
     args = parser.parse_args()
 

@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND,DS):
+def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND,DS,PLTSUB,PLTDWN,MASK,ZAP):
     with open("launch_me.sh",'w') as F:
         F.write("#!/bin/bash -l \n")
         F.write("\n")
@@ -33,6 +33,10 @@ def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND,DS):
         F.write("DDh=\"{}\" \n".format(str(HIDM)))
         F.write("step=\"{}\" \n".format(str(STEP)))
         F.write("downsamp=\"{}\" \n".format(str(DS)))
+        F.write("pltsub=\"{}\" \n".format(str(PLTSUB)))
+        F.write("pltdwn=\"{}\" \n".format(str(PLTDWN)))
+        F.write("mask=\"{}\" \n".format(str(MASK)))
+        F.write("zaps=\"{}\" \n".format(str(ZAP)))
         ###filly = os.path.join(FILPATH,FIL + ".fil")
         F.write("orig_fil=\"{}\" \n".format(FIL))
         #F.write("orig_fil=\"" + FIL + ".fil\" \n")
@@ -55,10 +59,28 @@ def create_script(LODM,HIDM,DIR,FIL,RES,CODE,JOB,LOG,Q,STEP,SUBBAND,DS):
         F.write("\n")
         F.write("rsync -v $orig_fil $tmpdir \n")
         F.write("\n")
-        if SUBBAND:
-            F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --subband \n")
+        if MASK == None:
+            if ZAP == None:
+                if SUBBAND:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --subband --plotsub $pltsub --plotdown $pltdwn \n")
+                else:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step --downsamp $downsamp --plotsub $pltsub --plotdown $pltdwn \n")
+            else:
+                if SUBBAND:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --subband --plotsub $pltsub --plotdown $pltdwn --zaps $zaps \n")
+                else:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step --downsamp $downsamp --plotsub $pltsub --plotdown $pltdwn --zaps $zaps \n")
         else:
-            F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step --downsamp $downsamp \n")
+            if ZAP == None:
+                if SUBBAND:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --subband --plotsub $pltsub --plotdown $pltdwn --mask $mask \n")
+                else:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step --downsamp $downsamp --plotsub $pltsub --plotdown $pltdwn --mask $mask \n")
+            else:
+                if SUBBAND:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --subband --plotsub $pltsub --plotdown $pltdwn --zaps $zaps --mask $mask \n")
+                else:
+                    F.write("singularity exec -B $code_dir:/work/ -B $tmpdir:/data/ /hercules/u/ghil/singularity/images/prestomod.simg python /work/main.py --dir /data/ --lodm $DDl --hidm $DDh --dmstep $step --downsamp $downsamp --plotsub $pltsub --plotdown $pltdwn --zaps $zaps --mask $mask \n")
         F.write("\n")
         F.write("echo \"mv single pulse search plot to main dir\" \n")
         F.write("mv $spsplot $tmpdir \n")

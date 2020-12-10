@@ -12,7 +12,7 @@ import wrap_cand_plot
 import DDp
 import struct
 
-def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
+def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB,PLTSUB,PLTDWN,MASK,ZAP):
 
     if SUB:
         # prepsubband stuff
@@ -88,44 +88,56 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
     clean_basename = os.path.splitext(os.path.basename(FIL))[0]
     clean_fullname = os.path.splitext(FIL)[0]
       
-    # standard zaps CX receiver, only FB0
-    zappys = "0:5,"\
-            "670:737,"\
-            "768:808,"\
-            "1019:1026,"\
-            "1669:1817,"\
-            "1840:1843"
-    # cut the upper band
-    #zappys = "0:2048,"\
-            #"2209:2213,"\
-            #"2718:2785,"\
-            #"2816:2856,"\
-            #"3067:3074,"\
-            #"3717:3865,"\
-            #"3888:3891"
-    # no manual zapping
-    zappys = "0:1"
-    # standard zaps CX receiver
-    zappys = "0:51,"\
-            "1016:1031,"\
-            "2037:2058,"\
-            "2191:2232,"\
-            "2713:2790,"\
-            "2811:2861,"\
-            "3062:3079,"\
-            "3712:3870,"\
-            "3882:3896"
+    if ZAP.lower() == 'cx':
+        # standard zaps CX receiver, only FB0
+        zappys = "0:5,"\
+                "670:737,"\
+                "768:808,"\
+                "1019:1026,"\
+                "1669:1817,"\
+                "1840:1843"
+        # cut the upper band
+        #zappys = "0:2048,"\
+                #"2209:2213,"\
+                #"2718:2785,"\
+                #"2816:2856,"\
+                #"3067:3074,"\
+                #"3717:3865,"\
+                #"3888:3891"
+        # no manual zapping
+        zappys = "0:1"
+        # standard zaps CX receiver
+        zappys = "0:51,"\
+                "1016:1031,"\
+                "2037:2058,"\
+                "2191:2232,"\
+                "2713:2790,"\
+                "2811:2861,"\
+                "3062:3079,"\
+                "3712:3870,"\
+                "3882:3896"
 
-    ## standard zaps cx receiver reverse test
-    #zappys = "200:214,"\
-    #        "226:384,"\
-    #        "1017:1034,"\
-    #        "1235:1285,"\
-    #        "1306:1383,"\
-    #        "1864:1905,"\
-    #        "2038:2059,"\
-    #        "3065:3080,"\
-    #        "4045:4096"
+        ## standard zaps cx receiver reverse test
+        #zappys = "200:214,"\
+        #        "226:384,"\
+        #        "1017:1034,"\
+        #        "1235:1285,"\
+        #        "1306:1383,"\
+        #        "1864:1905,"\
+        #        "2038:2059,"\
+        #        "3065:3080,"\
+        #        "4045:4096"
+
+    elif ZAP.lower() == 'seven':
+        print "nothing here yet"
+        print "someone can fill this in later..."
+        zappys = "0:1"
+
+    elif ZAP == None:
+        zappys = "0:1"
+
+    else:
+        zappys = ZAP.replace("-",",")
 
     # prep RFIfind commands
     RFI_t = "2.0"
@@ -136,19 +148,22 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
     RFI_ts = "10"
     RFI_if = "0.3"
 
-    # run RFIfind
-    subprocess.check_call(["rfifind",
-        "-time",RFI_t,
-        "-o",RFI_o,
-        RFI_file,
-        "-zapchan",RFI_z,
-        "-chanfrac",RFI_cf,
-        "-timesig",RFI_ts,
-        "-intfrac",RFI_if])
+    if MASK==None:
+        # run RFIfind
+        subprocess.check_call(["rfifind",
+            "-time",RFI_t,
+            "-o",RFI_o,
+            RFI_file,
+            "-zapchan",RFI_z,
+            "-chanfrac",RFI_cf,
+            "-timesig",RFI_ts,
+            "-intfrac",RFI_if])
 
-    # save mask file path
-    mask_path = os.path.join(DIR,"*.mask")
-    current_mask = glob.glob(mask_path)[0]
+        # save mask file path
+        mask_path = os.path.join(DIR,"*.mask")
+        current_mask = glob.glob(mask_path)[0]
+    else:
+        current_mask = MASK
 
     if SUB:
         # out parameter for prepsubband
@@ -291,7 +306,7 @@ def process_one(FIL,DIR,DMLO,DMHI,DMSTEP,DOWNSAMP,SUB):
         #no_m_i = True
     
     if m_i_file != 0:
-        wrap_cand_plot.plot_cands(FIL,current_mask,DIR,m_i_file)
+        wrap_cand_plot.plot_cands(FIL,current_mask,DIR,m_i_file,PLTSUB,PLTDWN)
     #if not no_m_i: 
         #try:
             #wrap_cand_plot.plot_cands(FIL,current_mask,DIR,m_i_file)
@@ -553,8 +568,14 @@ if __name__ == "__main__":
             help="Use subbands with prepsubband (and DDplan.py)")
     optional.add_argument('--noRFIfind',action='store_true',
             help="Skip RFIfind, use with manual mask input from --mask [add later]") 
-    optional.add_argument('--mask',
-            help="Manual mask input [add later]")
+    optional.add_argument('--mask',type=str,
+            help="Input an existing rfifind mask")
+    optional.add_argument('--plotsub',type=int,
+            help="Cand plot subbands, default 128",default=128)
+    optional.add_argument('--plotdown',type=int,
+            help="Cand plot downsamp, default = 8",default=8)
+    optional.add_argument('--zaps',type=str,
+            help="Manual zapping ('cx' for CX receiver, 'seven' for 7beam receiver, 'x:y-x:y-x:y' for manual zaps)")
     parser._action_groups.append(optional)
     args = parser.parse_args()
 
@@ -583,7 +604,7 @@ if __name__ == "__main__":
 
     # process filterbank
     ##process_one(fil,args.dir,dms)
-    process_one(fil,args.dir,args.lodm,args.hidm,args.dmstep,args.downsamp,args.subband)
+    process_one(fil,args.dir,args.lodm,args.hidm,args.dmstep,args.downsamp,args.subband,args.plotsub,args.plotdown,args.mask,args.zaps)
 
     # end message
     end_msg = "great success, all done!"

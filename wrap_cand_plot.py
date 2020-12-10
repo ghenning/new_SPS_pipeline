@@ -35,7 +35,7 @@ def get_headparam(head, parlist):
         return parlist
 
 
-def plot_cands(FIL,MASK,DIR,CANDFILE):
+def plot_cands(FIL,MASK,DIR,CANDFILE,SUBBANDS,DOWNSAMP):
         
     # load file
     data = np.loadtxt(CANDFILE)
@@ -60,8 +60,8 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
     tsamp = samptime * 1e3 # in milliseconds
 
     # scrunch parameters
-    fscrunch = 512
-    tscrunch = 4
+    fscrunch = SUBBANDS
+    tscrunch = DOWNSAMP
 
     # plot directory
     plt_dir = os.path.join(DIR,"cand_plots")
@@ -81,14 +81,26 @@ def plot_cands(FIL,MASK,DIR,CANDFILE):
         ###if m_i <= (m_thresh+5):
         if m_i <= (m_thresh+10):
             try:
-                subprocess.check_call(["python","generalplotter.py",
+                #subprocess.check_call(["python","generalplotter.py",
+                #    "--ftop",str(ftop),
+                #    "--fchan",str(fchan),
+                #    "--nchan",str(nchan),
+                #    "--samptime",str(tsamp),
+                #    "--data",FIL,
+                #    "--fscrunch",str(fscrunch),
+                #    "--tscrunch",str(tscrunch),
+                #    "--out",plt_dir,
+                #    "--dm",str(DM),
+                #    "--samp",str(T),
+                #    "--mask",MASK])
+                subprocess.check_call(["python","candpanel.py",
                     "--ftop",str(ftop),
                     "--fchan",str(fchan),
                     "--nchan",str(nchan),
                     "--samptime",str(tsamp),
                     "--data",FIL,
-                    "--fscrunch",str(fscrunch),
-                    "--tscrunch",str(tscrunch),
+                    "--subbands",str(fscrunch),
+                    "--downsamp",str(tscrunch),
                     "--out",plt_dir,
                     "--dm",str(DM),
                     "--samp",str(T),
